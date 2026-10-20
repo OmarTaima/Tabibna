@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 160 23% 97%;
+    --foreground: 170 21% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 170 21% 11%;
+    --primary: 175 77% 26%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 175 74% 20%;
+    --secondary: 160 22% 95%;
+    --secondary-foreground: 170 21% 11%;
+    --muted: 160 22% 95%;
+    --muted-foreground: 160 8% 36%;
+    --accent: 166 33% 92%;
+    --accent-foreground: 175 77% 20%;
+    --border: 160 14% 90%;
+    --input: 160 14% 88%;
+    --ring: 175 77% 26%;
+    --destructive: 4 76% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --warning: 22 92% 37%;
+    --warning-foreground: 0 0% 100%;
+    --success: 175 77% 26%;
+    --success-foreground: 0 0% 100%;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: #f7faf9;
+    color: #162220;
+    font-family: "Inter", "IBM Plex Sans Arabic", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :where(a, button, input, textarea, select, [tabindex]):focus-visible {
+    outline: 2px solid #0f766e;
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: rgb(15 118 110 / 0.16);
+  }
+}
+
+:lang(ar) {
+  font-family: "IBM Plex Sans Arabic", "Inter", system-ui, sans-serif;
+  line-height: 1.8;
+  letter-spacing: 0;
+  text-transform: none;
+  font-style: normal;
+}
+
+.print-text-en {
+  font-size: 10.5pt;
+  line-height: 1.5;
+}
+
+.print-text-ar {
+  font-size: 11pt;
+  line-height: 1.9;
+}
+
+@page {
+  size: A4;
+  margin: 15mm 16mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-report {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .break-inside-avoid {
+    break-inside: avoid;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+  }
+}
