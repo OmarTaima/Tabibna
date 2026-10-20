@@ -3,11 +3,11 @@ import path from "node:path";
 import cors, { type CorsOptions } from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";
-import { NOT_FOUND_MESSAGE } from "./config/content";
-import { config } from "./config/env";
-import { requestIdMiddleware } from "./http/request-id";
-import { createApiRouter } from "./routes";
-import { errorHandler, sendError } from "./schemas/errors";
+import { NOT_FOUND_MESSAGE } from "./config/content.ts";
+import { config } from "./config/env.ts";
+import { requestIdMiddleware } from "./http/request-id.ts";
+import { createApiRouter } from "./routes/index.ts";
+import { errorHandler, sendError } from "./schemas/errors.ts";
 
 const corsOptions: CorsOptions = {
   origin(origin, callback) {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-const { AI_SYSTEM_PROMPT, buildUserPrompt } = await import("../src/ai/prompt");
+const { AI_SYSTEM_PROMPT, buildUserPrompt } = await import("../src/ai/prompt.ts");
 
 function passed(name: string): void {
   console.log(`ok - ${name}`);

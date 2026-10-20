@@ -199,8 +199,8 @@ process.env.AI_MAX_TOKENS = "12000";
 process.env.ALLOWED_ORIGINS = "http://localhost:5173";
 process.env.ANALYZE_RATE_LIMIT = "1000";
 
-const { createApp } = await import("../src/app");
-const { analyzeResponseSchema, apiErrorSchema } = await import("../../shared/contract");
+const { createApp } = await import("../src/app.ts");
+const { analyzeResponseSchema, apiErrorSchema } = await import("../../shared/contract.ts");
 
 const app = createApp();
 const server = app.listen(0);

@@ -1,5 +1,5 @@
-import type { LocalizedText } from "../../../shared/contract";
-import { config } from "./env";
+import type { LocalizedText } from "../../../shared/contract.ts";
+import { config } from "./env.ts";
 
 export const APP_VERSION = "1.0.0";
 

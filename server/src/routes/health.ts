@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import { healthResponseSchema, type HealthResponse } from "../../../shared/contract";
-import { APP_VERSION } from "../config/content";
-import { config } from "../config/env";
+import { healthResponseSchema, type HealthResponse } from "../../../shared/contract.ts";
+import { APP_VERSION } from "../config/content.ts";
+import { config } from "../config/env.ts";
 
 export function healthHandler(_request: Request, response: Response): void {
   const body: HealthResponse = {

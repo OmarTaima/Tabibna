@@ -3,8 +3,8 @@ import type {
   DetectedLanguage,
   LocalizedText,
   MedicalAnalysis,
-} from "./contract";
-import { DEMO_NOTICE, FULL_DISCLAIMER } from "./content";
+} from "./contract.ts";
+import { DEMO_NOTICE, FULL_DISCLAIMER } from "./content.ts";
 
 type DemoCase = {
   key: string;

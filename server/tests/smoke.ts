@@ -6,9 +6,9 @@ process.env.AI_API_KEY = "";
 process.env.ALLOWED_ORIGINS = "http://localhost:5173";
 process.env.ANALYZE_RATE_LIMIT = "1000";
 
-const { createApp } = await import("../src/app");
+const { createApp } = await import("../src/app.ts");
 const { analyzeResponseSchema, apiErrorSchema, healthResponseSchema } = await import(
-  "../../shared/contract"
+  "../../shared/contract.ts"
 );
 
 type RequestOptions = {

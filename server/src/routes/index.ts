@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { NOT_FOUND_MESSAGE } from "../config/content";
-import { analyzeRateLimiter } from "../http/rate-limit";
-import { sendError } from "../schemas/errors";
-import { analyzeHandler } from "./analyze";
-import { healthHandler } from "./health";
+import { NOT_FOUND_MESSAGE } from "../config/content.ts";
+import { analyzeRateLimiter } from "../http/rate-limit.ts";
+import { sendError } from "../schemas/errors.ts";
+import { analyzeHandler } from "./analyze.ts";
+import { healthHandler } from "./health.ts";
 
 export function createApiRouter(): Router {
   const router = Router();

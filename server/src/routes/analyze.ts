@@ -4,13 +4,13 @@ import {
   analyzeRequestSchema,
   analyzeResponseSchema,
   type MedicalAnalysis,
-} from "../../../shared/contract";
-import { requestAiAnalysis } from "../ai/provider";
-import { FULL_DISCLAIMER, LIVE_NOTICE } from "../config/content";
-import { config } from "../config/env";
-import { buildMockAnalysis } from "../mock/mock-analysis";
-import { getRequestId } from "../schemas/errors";
-import { parseRequest } from "../schemas/validation";
+} from "../../../shared/contract.ts";
+import { requestAiAnalysis } from "../ai/provider.ts";
+import { FULL_DISCLAIMER, LIVE_NOTICE } from "../config/content.ts";
+import { config } from "../config/env.ts";
+import { buildMockAnalysis } from "../mock/mock-analysis.ts";
+import { getRequestId } from "../schemas/errors.ts";
+import { parseRequest } from "../schemas/validation.ts";
 
 export async function analyzeHandler(
   request: Request,

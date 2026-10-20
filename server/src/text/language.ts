@@ -1,5 +1,5 @@
-import type { DetectedLanguage } from "../../../shared/contract";
-import { normalizeForMatching } from "./normalize";
+import type { DetectedLanguage } from "../../../shared/contract.ts";
+import { normalizeForMatching } from "./normalize.ts";
 
 const ARABIC_SCRIPT = /[\u0600-\u06FF]/;
 const LATIN_SCRIPT = /[A-Za-z]/;

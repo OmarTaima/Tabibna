@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
-import { createApp } from "./app";
-import { config } from "./config/env";
+import { createApp } from "./app.ts";
+import { config } from "./config/env.ts";
 
 const app = createApp();
 const server = createServer(app);

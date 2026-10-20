@@ -1,4 +1,4 @@
-import { createApp } from "../server/src/app";
+import { createApp } from "../server/src/app.js";
 
 /**
  * Vercel serverless entrypoint for every `/api/*` route.

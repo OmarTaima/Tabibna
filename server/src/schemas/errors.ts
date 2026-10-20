@@ -1,10 +1,10 @@
 import type { ErrorRequestHandler, Response } from "express";
-import type { ApiError } from "../../../shared/contract";
+import type { ApiError } from "../../../shared/contract.ts";
 import {
   INTERNAL_ERROR_MESSAGE,
   INVALID_JSON_MESSAGE,
   PAYLOAD_TOO_LARGE_MESSAGE,
-} from "../config/content";
+} from "../config/content.ts";
 
 export class AppError extends Error {
   readonly status: number;

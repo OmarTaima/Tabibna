@@ -4,11 +4,11 @@ import type {
   LocalizedText,
   MedicalAnalysis,
   TerminologyItem,
-} from "../../../shared/contract";
-import { DEMO_NOTICE, FULL_DISCLAIMER } from "../config/content";
-import { detectLanguage } from "../text/language";
-import { maskNegatedClauses, normalizeForMatching } from "../text/normalize";
-import { MOCK_SYMPTOMS, type MockClarification, type MockTerm } from "./patterns";
+} from "../../../shared/contract.ts";
+import { DEMO_NOTICE, FULL_DISCLAIMER } from "../config/content.ts";
+import { detectLanguage } from "../text/language.ts";
+import { maskNegatedClauses, normalizeForMatching } from "../text/normalize.ts";
+import { MOCK_SYMPTOMS, type MockClarification, type MockTerm } from "./patterns.ts";
 
 type SelectedSymptom = {
   term: MockTerm;

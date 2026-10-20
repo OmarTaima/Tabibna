@@ -1,1 +1,1 @@
-export { maskNegatedClauses, normalizeForMatching } from "../../../shared/text";
+export { maskNegatedClauses, normalizeForMatching } from "../../../shared/text.ts";

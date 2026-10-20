@@ -1,4 +1,4 @@
-import type { AiTerminologyItem, LocalizedText } from "../../../shared/contract";
+import type { AiTerminologyItem, LocalizedText } from "../../../shared/contract.ts";
 
 export type MockTerm = {
   english: string;

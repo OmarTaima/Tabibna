@@ -7,8 +7,8 @@ process.env.AI_BASE_URL = "http://127.0.0.1:9/v1";
 process.env.ALLOWED_ORIGINS = "http://localhost:5173";
 process.env.ANALYZE_RATE_LIMIT = "2";
 
-const { createApp } = await import("../src/app");
-const { apiErrorSchema, healthResponseSchema } = await import("../../shared/contract");
+const { createApp } = await import("../src/app.ts");
+const { apiErrorSchema, healthResponseSchema } = await import("../../shared/contract.ts");
 
 type RequestOptions = {
   method?: string;

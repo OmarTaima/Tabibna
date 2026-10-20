@@ -1,4 +1,4 @@
-import type { LocalizedText } from "./contract";
+import type { LocalizedText } from "./contract.ts";
 
 export const DEMO_NOTICE: LocalizedText = {
   en: "Demo mode: this is a curated synthetic sample. Your description was not analyzed by AI.",

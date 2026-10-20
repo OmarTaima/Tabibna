@@ -1,4 +1,4 @@
-import type { AiAnalysisContent } from "../../../shared/contract";
+import type { AiAnalysisContent } from "../../../shared/contract.ts";
 
 const MISSPELLED_PARESTHESIA = "تنمل";
 const PARESTHESIA = "تنميل";

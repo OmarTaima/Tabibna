@@ -1,4 +1,4 @@
-import { aiAnalysisContentSchema, type AiAnalysisContent, type Locale } from "../../../shared/contract";
+import { aiAnalysisContentSchema, type AiAnalysisContent, type Locale } from "../../../shared/contract.ts";
 import {
   AI_DAILY_QUOTA_MESSAGE,
   AI_ERROR_MESSAGE,
@@ -6,11 +6,11 @@ import {
   AI_REQUEST_TIMEOUT_MS,
   AI_TIMEOUT_MESSAGE,
   AI_UPSTREAM_RATE_LIMIT_MESSAGE,
-} from "../config/content";
-import { config } from "../config/env";
-import { AppError } from "../schemas/errors";
-import { correctArabicParesthesiaSpelling } from "./arabic-text";
-import { AI_SYSTEM_PROMPT, buildUserPrompt } from "./prompt";
+} from "../config/content.ts";
+import { config } from "../config/env.ts";
+import { AppError } from "../schemas/errors.ts";
+import { correctArabicParesthesiaSpelling } from "./arabic-text.ts";
+import { AI_SYSTEM_PROMPT, buildUserPrompt } from "./prompt.ts";
 
 type ChatCompletionChoice = {
   content: string | null;

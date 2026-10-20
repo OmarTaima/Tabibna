@@ -1,4 +1,4 @@
-import type { Locale } from "../../../shared/contract";
+import type { Locale } from "../../../shared/contract.ts";
 
 export const AI_SYSTEM_PROMPT = `You are Tabibna AI, a bilingual medical-language normalization assistant. You are not a doctor. You never diagnose, treat, or prescribe.
 

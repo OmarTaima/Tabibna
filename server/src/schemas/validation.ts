@@ -1,5 +1,5 @@
 import type { ZodError, ZodType, ZodTypeDef } from "zod";
-import { AppError } from "./errors";
+import { AppError } from "./errors.ts";
 
 function validationMessage(error: ZodError): string {
   const issue = error.issues[0];
