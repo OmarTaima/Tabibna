@@ -12,6 +12,8 @@
     "typecheck": "tsc --noEmit",
     "typecheck:server": "tsc -p tsconfig.server.json --noEmit",
     "test:server": "tsx server/tests/smoke.ts && tsx server/tests/failure-paths.ts && tsx server/tests/prompt.ts && tsx server/tests/live-ai.ts",
+    "test:client": "tsx src/lib/reminders.test.ts && tsx src/lib/notifications.test.ts",
+    "test": "npm run test:server && npm run test:client",
     "start": "cross-env NODE_ENV=production tsx server/src/index.ts",
     "preview": "vite preview"
   },

@@ -96,9 +96,15 @@ export default {
           from: { opacity: "0", transform: "translateY(6px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        "alarm-pulse": {
+          from: { opacity: "0.85", transform: "translate(-50%, -50%) scale(0.85)" },
+          to: { opacity: "0", transform: "translate(-50%, -50%) scale(1.7)" },
+        },
       },
       animation: {
         "fade-up": "fade-up 280ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "alarm-pulse":
+          "alarm-pulse 1400ms cubic-bezier(0.22, 1, 0.36, 1) infinite",
       },
     },
   },

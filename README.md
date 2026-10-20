@@ -14,6 +14,7 @@ It is **not** a diagnostic or treatment tool, and it is not a chatbot. The exper
 - Missing-information questions without invented assumptions
 - Full English LTR and Arabic RTL interfaces
 - Copyable bilingual summary and print/PDF healthcare report
+- Medicine reminders with an alarm sound, a browser notification, and an in-app alarm overlay
 - Loading, empty, invalid-input, API-error, and mock-mode states
 - Clearly labeled synthetic demo mode when no AI provider is configured
 
@@ -141,7 +142,28 @@ All requests and responses are validated against `shared/contract.ts`. Errors us
 | `npm run dev:server` | Express API only (watch mode) |
 | `npm run typecheck` | TypeScript check for app + server |
 | `npm run build` | Typecheck and build the frontend |
+| `npm run test:server` | Server smoke, failure-path, prompt, and live-AI tests |
+| `npm run test:client` | Reminder and notification unit tests |
+| `npm test` | Run the server and client test suites together |
 | `npm start` | Run the production server |
+
+## Medicine reminders
+
+The **Reminders** tab stores reminders locally in the browser (`localStorage`, key `tabibna.reminders.v1`). Nothing is uploaded and no account is required.
+
+- **Schedule**: repeat every N hours (1–24, with presets 4 / 6 / 8 / 12 / 24), or a fixed time each day.
+- **Alarm**: a Web Audio two-tone beep, a browser notification, and a full-screen in-app overlay with **Taken**, **Snooze 10 minutes**, and **Dismiss**. The overlay is an `alertdialog`, closes on Escape, and is announced to screen readers.
+- **Missed alarms** are caught up once when the page is reopened, then the fixed cadence resumes.
+- **Notifications** are delivered through a minimal Service Worker (`public/sw.js`) because Chrome Android blocks the plain `new Notification()` constructor. The worker never caches anything and never intercepts `fetch`.
+- **Sound requires a user gesture**: the browser blocks audio until the user interacts with the page, so the alarm is unlocked when a reminder is saved or notifications are enabled.
+
+Limitations worth knowing:
+
+- The alarm only fires while a tab of the app is running. A closed browser cannot ring; that needs Web Push with a server-side subscription store, which this project deliberately does not have.
+- Browsers throttle timers in background tabs to roughly once a minute, so the reminder may fire a little late; it is never skipped.
+- If notification permission is denied, the in-app overlay and the sound still work, and the UI says so.
+
+Tabibna does not give dosing advice. Reminders only repeat the schedule the user enters, which should follow their doctor or pharmacist.
 
 ## Scope
 
