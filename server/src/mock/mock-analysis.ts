@@ -1,6 +1,9 @@
 import { randomUUID } from "node:crypto";
 import type {
+  AiFollowUpContent,
+  AiFollowUpQuestion,
   Clarification,
+  Impression,
   LocalizedText,
   MedicalAnalysis,
   TerminologyItem,
@@ -45,6 +48,34 @@ const FALLBACK_CLARIFICATIONS: readonly MockClarification[] = [
     },
   },
 ];
+
+const FALLBACK_FOLLOW_UP_QUESTIONS: readonly AiFollowUpQuestion[] = [
+  {
+    en: "When did these symptoms start, and are they getting better, worse, or staying the same?",
+    ar: "متى بدأت هذه الأعراض، وهل تتحسن أم تزداد سوءًا أم تبقى كما هي؟",
+  },
+  {
+    en: "How severe are the symptoms at their worst, and what makes them better or worse?",
+    ar: "ما مدى شدة الأعراض في أسوأ حالاتها، وما الذي يخففها أو يزيدها؟",
+  },
+  {
+    en: "Do you have any other symptoms such as fever, vomiting, or difficulty breathing?",
+    ar: "هل لديك أعراض أخرى مثل الحرارة أو القيء أو صعوبة في التنفس؟",
+  },
+];
+
+export const MOCK_IMPRESSION: Impression = {
+  primary: {
+    en: "Synthetic demo — no diagnosis generated",
+    ar: "عرض تجريبي اصطناعي — لم يُولَّد أي تشخيص",
+  },
+  confidence: "low",
+  differentials: [],
+  rationale: {
+    en: "Demo mode does not call an AI model, so VivaValve cannot produce a real assessment. This placeholder shows where the most likely diagnosis, its confidence, and its reasoning appear once a live AI provider is configured.",
+    ar: "الوضع التجريبي لا يستدعي نموذج ذكاء اصطناعي، لذلك لا يستطيع VivaValve إنتاج تقييم حقيقي. هذا النص التوضيحي يبيّن المكان الذي يظهر فيه التشخيص الأكثر احتمالًا ودرجة الثقة وتعليله عند تهيئة مزوّد ذكاء اصطناعي مباشر.",
+  },
+};
 
 function joinEnglish(items: readonly string[]): string {
   if (items.length === 1) return items[0];
@@ -148,6 +179,32 @@ export function buildMockAnalysis(description: string): MedicalAnalysis {
     terminology,
     clarifications,
     clinicalInterpretations: [],
+    impression: MOCK_IMPRESSION,
     disclaimer: FULL_DISCLAIMER,
   };
+}
+
+export function buildMockFollowUp(description: string): AiFollowUpContent {
+  const selected = selectSymptoms(description);
+  const candidates: AiFollowUpQuestion[] = [
+    ...selected.flatMap((item) =>
+      item.clarifications.map((clarification) => ({
+        en: clarification.question.en,
+        ar: clarification.question.ar,
+      })),
+    ),
+    ...FALLBACK_FOLLOW_UP_QUESTIONS,
+  ];
+
+  const seen = new Set<string>();
+  const questions = candidates
+    .filter((question) => {
+      const key = question.en.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 3);
+
+  return { questions };
 }

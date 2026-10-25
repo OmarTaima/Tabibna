@@ -1,4 +1,16 @@
-import { aiAnalysisContentSchema, type AiAnalysisContent, type Locale } from "../../../shared/contract.ts";
+import type { ZodType } from "zod";
+import {
+  aiAnalysisContentSchema,
+  aiEchoContentSchema,
+  aiFollowUpContentSchema,
+  aiFollowUpDecisionSchema,
+  type AiAnalysisContent,
+  type AiEchoContent,
+  type AiFollowUpContent,
+  type AiFollowUpDecision,
+  type FollowUpAnswer,
+  type Locale,
+} from "../../../shared/contract.ts";
 import {
   AI_DAILY_QUOTA_MESSAGE,
   AI_ERROR_MESSAGE,
@@ -10,7 +22,22 @@ import {
 import { config } from "../config/env.ts";
 import { AppError } from "../schemas/errors.ts";
 import { correctArabicParesthesiaSpelling } from "./arabic-text.ts";
-import { AI_SYSTEM_PROMPT, buildUserPrompt } from "./prompt.ts";
+import {
+  AI_ECHO_SYSTEM_PROMPT,
+  AI_FINAL_SYSTEM_PROMPT,
+  AI_FOLLOW_UP_DECISION_SYSTEM_PROMPT,
+  AI_FOLLOW_UP_SYSTEM_PROMPT,
+  buildEchoUserPrompt,
+  buildFinalUserPrompt,
+  buildFollowUpDecisionUserPrompt,
+  buildFollowUpUserPrompt,
+} from "./prompt.ts";
+
+export type AiOperation =
+  | "follow_up_questions"
+  | "follow_up_decision"
+  | "final_analysis"
+  | "echo_glossary";
 
 type ChatCompletionChoice = {
   content: string | null;
@@ -29,6 +56,7 @@ type ZodIssueSummary = {
 
 type InvalidOutputDiagnostics = {
   requestId: string;
+  operation: AiOperation;
   reason: "response_json" | "missing_content" | "finish_length" | "json_parse" | "schema";
   finishReason: string | null;
   completionTokens: number | null;
@@ -232,6 +260,7 @@ async function sendUpstreamRequest(
   model: string,
   body: string,
   signal: AbortSignal,
+  operation: AiOperation,
   requestId: string,
 ): Promise<UpstreamAttempt> {
   let lastFailure: UpstreamFailure | null = null;
@@ -283,7 +312,7 @@ async function sendUpstreamRequest(
 
     const delay = readRetryHintMs(responseBody) ?? RETRY_BASE_DELAY_MS * attempt;
     console.warn(
-      `[ai] upstream status=${response.status} model=${model} attempt=${attempt} retrying in ${delay}ms requestId=${requestId}`,
+      `[ai] upstream status=${response.status} operation=${operation} model=${model} attempt=${attempt} retrying in ${delay}ms requestId=${requestId}`,
     );
     await sleep(delay, signal);
   }
@@ -295,11 +324,41 @@ async function sendUpstreamRequest(
   return { failure: lastFailure, attempts, model };
 }
 
-export async function requestAiAnalysis(
-  description: string,
-  locale: Locale,
-  requestId: string,
-): Promise<AiAnalysisContent> {
+type AiRequestInput<T> = {
+  systemPrompt: string;
+  userPrompt: string;
+  schema: ZodType<T>;
+  operation: AiOperation;
+  requestId: string;
+};
+
+type ModelOutcome<T> =
+  | {
+      kind: "ok";
+      content: T;
+      model: string;
+      finishReason: string | null;
+      usage: TokenUsage;
+      contentLength: number;
+    }
+  | { kind: "http"; failure: UpstreamFailure; attempts: number; model: string }
+  | {
+      kind: "invalid";
+      reason: InvalidOutputDiagnostics["reason"];
+      model: string;
+      finishReason: string | null;
+      usage: TokenUsage;
+      contentLength: number;
+      issues: ZodIssueSummary[] | null;
+    };
+
+export async function requestAiJson<T>({
+  systemPrompt,
+  userPrompt,
+  schema,
+  operation,
+  requestId,
+}: AiRequestInput<T>): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), AI_REQUEST_TIMEOUT_MS);
   const startedAt = Date.now();
@@ -309,8 +368,8 @@ export async function requestAiAnalysis(
       JSON.stringify({
         model,
         messages: [
-          { role: "system", content: AI_SYSTEM_PROMPT },
-          { role: "user", content: buildUserPrompt(description, locale) },
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
         ],
         temperature: 0.1,
         max_tokens: config.aiMaxTokens,
@@ -319,20 +378,16 @@ export async function requestAiAnalysis(
         stream: false,
       });
 
-    const models = [config.aiModel, config.aiFallbackModel].filter(
+    const fallbackModels = [config.aiFallbackModel].filter(
       (model): model is string => model !== "" && model !== config.aiModel,
     );
 
-    type ModelOutcome =
-      | { kind: "ok"; content: AiAnalysisContent; model: string; finishReason: string | null; usage: TokenUsage; contentLength: number }
-      | { kind: "http"; failure: UpstreamFailure; attempts: number; model: string }
-      | { kind: "invalid"; reason: InvalidOutputDiagnostics["reason"]; model: string; finishReason: string | null; usage: TokenUsage; contentLength: number; issues: ZodIssueSummary[] | null };
-
-    const runModel = async (model: string): Promise<ModelOutcome> => {
+    const runModel = async (model: string): Promise<ModelOutcome<T>> => {
       const { failure, attempts: modelAttempts } = await sendUpstreamRequest(
         model,
         buildBody(model),
         controller.signal,
+        operation,
         requestId,
       );
 
@@ -362,19 +417,43 @@ export async function requestAiAnalysis(
       const finishReason = choice?.finishReason ?? null;
 
       if (choice === null || choice.content === null || choice.content.trim() === "") {
-        return { kind: "invalid", reason: "missing_content", model, finishReason, usage, contentLength, issues: null };
+        return {
+          kind: "invalid",
+          reason: "missing_content",
+          model,
+          finishReason,
+          usage,
+          contentLength,
+          issues: null,
+        };
       }
 
       if (finishReason === "length") {
-        return { kind: "invalid", reason: "finish_length", model, finishReason, usage, contentLength, issues: null };
+        return {
+          kind: "invalid",
+          reason: "finish_length",
+          model,
+          finishReason,
+          usage,
+          contentLength,
+          issues: null,
+        };
       }
 
       const parsed = parseJsonObject(content);
       if (parsed === undefined) {
-        return { kind: "invalid", reason: "json_parse", model, finishReason, usage, contentLength, issues: null };
+        return {
+          kind: "invalid",
+          reason: "json_parse",
+          model,
+          finishReason,
+          usage,
+          contentLength,
+          issues: null,
+        };
       }
 
-      const result = aiAnalysisContentSchema.safeParse(parsed);
+      const result = schema.safeParse(parsed);
       if (!result.success) {
         return {
           kind: "invalid",
@@ -402,7 +481,7 @@ export async function requestAiAnalysis(
 
     let outcome = await runModel(config.aiModel);
 
-    for (const fallbackModel of models) {
+    for (const fallbackModel of fallbackModels) {
       if (outcome.kind === "ok") break;
       if (outcome.kind === "http") {
         if (outcome.failure.isDailyQuota) break;
@@ -410,7 +489,7 @@ export async function requestAiAnalysis(
       }
 
       console.warn(
-        `[ai] model ${outcome.model} produced unusable output (${outcome.kind}) falling back to ${fallbackModel} requestId=${requestId}`,
+        `[ai] model ${outcome.model} produced unusable output (${outcome.kind}) operation=${operation} falling back to ${fallbackModel} requestId=${requestId}`,
       );
       outcome = await runModel(fallbackModel);
     }
@@ -419,18 +498,18 @@ export async function requestAiAnalysis(
       const { failure, attempts, model } = outcome;
       if (failure.isDailyQuota) {
         console.error(
-          `[ai] request failed reason=daily_quota model=${model} attempts=${attempts} resetAt=${failure.resetAt} requestId=${requestId}`,
+          `[ai] request failed reason=daily_quota operation=${operation} model=${model} attempts=${attempts} resetAt=${failure.resetAt} requestId=${requestId}`,
         );
         throw new AppError(429, "AI_DAILY_QUOTA", AI_DAILY_QUOTA_MESSAGE);
       }
       if (failure.status === 429) {
         console.error(
-          `[ai] request failed reason=upstream_rate_limit model=${model} attempts=${attempts} requestId=${requestId}`,
+          `[ai] request failed reason=upstream_rate_limit operation=${operation} model=${model} attempts=${attempts} requestId=${requestId}`,
         );
         throw new AppError(429, "AI_RATE_LIMITED", AI_UPSTREAM_RATE_LIMIT_MESSAGE);
       }
       console.error(
-        `[ai] request failed reason=status status=${failure.status} model=${model} attempts=${attempts} requestId=${requestId}`,
+        `[ai] request failed reason=status status=${failure.status} operation=${operation} model=${model} attempts=${attempts} requestId=${requestId}`,
       );
       throw new AppError(502, "AI_ERROR", AI_ERROR_MESSAGE);
     }
@@ -438,6 +517,7 @@ export async function requestAiAnalysis(
     if (outcome.kind === "invalid") {
       throw invalidOutput({
         requestId,
+        operation,
         reason: outcome.reason,
         finishReason: outcome.finishReason,
         ...outcome.usage,
@@ -450,22 +530,88 @@ export async function requestAiAnalysis(
     const { content: validatedContent, model, finishReason, usage, contentLength } = outcome;
 
     console.log(
-      `[ai] ok requestId=${requestId} model=${model} finishReason=${finishReason} completionTokens=${usage.completionTokens} reasoningTokens=${usage.reasoningTokens} contentLength=${contentLength} durationMs=${Date.now() - startedAt}`,
+      `[ai] ok operation=${operation} requestId=${requestId} model=${model} finishReason=${finishReason} completionTokens=${usage.completionTokens} reasoningTokens=${usage.reasoningTokens} contentLength=${contentLength} durationMs=${Date.now() - startedAt}`,
     );
 
-    return correctArabicParesthesiaSpelling(validatedContent);
+    return validatedContent;
   } catch (error) {
     if (error instanceof AppError) throw error;
     const isAbort =
       error instanceof Error &&
       (error.name === "AbortError" || error.name === "TimeoutError");
     if (isAbort) {
-      console.error(`[ai] request failed reason=timeout requestId=${requestId}`);
+      console.error(`[ai] request failed reason=timeout operation=${operation} requestId=${requestId}`);
       throw new AppError(504, "AI_TIMEOUT", AI_TIMEOUT_MESSAGE);
     }
-    console.error(`[ai] request failed reason=network requestId=${requestId}`);
+    console.error(`[ai] request failed reason=network operation=${operation} requestId=${requestId}`);
     throw new AppError(502, "AI_ERROR", AI_ERROR_MESSAGE);
   } finally {
     clearTimeout(timeout);
   }
+}
+
+export function requestAiFollowUpQuestions(
+  description: string,
+  locale: Locale,
+  requestId: string,
+): Promise<AiFollowUpContent> {
+  return requestAiJson({
+    systemPrompt: AI_FOLLOW_UP_SYSTEM_PROMPT,
+    userPrompt: buildFollowUpUserPrompt(description, locale),
+    schema: aiFollowUpContentSchema,
+    operation: "follow_up_questions",
+    requestId,
+  });
+}
+
+export async function requestAiFollowUpDecision(
+  description: string,
+  answers: readonly FollowUpAnswer[],
+  locale: Locale,
+  requestId: string,
+): Promise<AiFollowUpDecision> {
+  const decision = await requestAiJson({
+    systemPrompt: AI_FOLLOW_UP_DECISION_SYSTEM_PROMPT,
+    userPrompt: buildFollowUpDecisionUserPrompt(description, answers, locale),
+    schema: aiFollowUpDecisionSchema,
+    operation: "follow_up_decision",
+    requestId,
+  });
+
+  if (decision.decision === "final") {
+    return { decision: "final", analysis: correctArabicParesthesiaSpelling(decision.analysis) };
+  }
+
+  return decision;
+}
+
+export async function requestAiFinalAnalysis(
+  description: string,
+  answers: readonly FollowUpAnswer[],
+  locale: Locale,
+  requestId: string,
+): Promise<AiAnalysisContent> {
+  const content = await requestAiJson({
+    systemPrompt: AI_FINAL_SYSTEM_PROMPT,
+    userPrompt: buildFinalUserPrompt(description, answers, locale),
+    schema: aiAnalysisContentSchema,
+    operation: "final_analysis",
+    requestId,
+  });
+
+  return correctArabicParesthesiaSpelling(content);
+}
+
+export function requestAiEcho(
+  text: string,
+  locale: Locale,
+  requestId: string,
+): Promise<AiEchoContent> {
+  return requestAiJson({
+    systemPrompt: AI_ECHO_SYSTEM_PROMPT,
+    userPrompt: buildEchoUserPrompt(text, locale),
+    schema: aiEchoContentSchema,
+    operation: "echo_glossary",
+    requestId,
+  });
 }

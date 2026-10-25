@@ -1,11 +1,15 @@
 import type { Locale } from "@shared/contract";
-import { formatNumber, formatTermNumber } from "@/lib/format";
+import {
+  formatArabicNumber,
+  formatNumber,
+  formatTermNumber,
+} from "@/lib/format";
 
 const en = {
   meta: {
-    title: "Tabibna AI — Medical language, made clear",
+    title: "VivaValve AI — Medical language, made clear",
     description:
-      "Translate everyday Egyptian Arabic or English symptom descriptions into clear, standardized medical terminology in Arabic and English. Not a diagnosis.",
+      "VivaValve AI turns everyday Egyptian Arabic or English symptom descriptions into clear medical language, asks a few follow-up questions, and explains echocardiography reports in plain language. It is not a confirmed diagnosis.",
   },
   skipLink: "Skip to main content",
   languages: {
@@ -14,13 +18,14 @@ const en = {
   },
   nav: {
     label: "Sections",
-    analyze: "Analyze symptoms",
+    followUps: "FollowUps",
+    echo: "EchoBridge",
     reminders: "Reminders",
   },
   header: {
-    brandWordmark: "Tabibna",
+    brandWordmark: "VivaValve",
     brandAccent: "AI",
-    brandLabel: "Tabibna AI",
+    brandLabel: "VivaValve AI",
     languageGroup: "Language",
     english: "English",
     arabic: "العربية",
@@ -35,10 +40,10 @@ const en = {
     },
   },
   hero: {
-    overline: "TABIBNA AI · MEDICAL LANGUAGE",
-    title: "Your symptoms, translated into medical language.",
+    overline: "VIVAVALVE AI · MEDICAL LANGUAGE",
+    title: "From symptoms to a clear clinical assessment.",
     description:
-      "Describe what you are feeling in everyday Egyptian Arabic or English. Tabibna structures it into standardized medical terms — it is not a diagnosis.",
+      "Describe what you are feeling in everyday Egyptian Arabic or English. VivaValve structures it into standardized medical terms, asks a few follow-up questions, and suggests the most likely diagnosis, with alternatives. It is not a confirmed diagnosis.",
   },
   form: {
     regionLabel: "Symptom description form",
@@ -53,7 +58,7 @@ const en = {
     exampleEnglishLabel: "English",
     exampleEnglishText:
       "I've had a headache since yesterday and feel dizzy when I stand up. I also have a mild fever.",
-    submit: "Analyze symptoms",
+    submit: "Start assessment",
     submitting: "Analyzing…",
     shortcut: "Ctrl or ⌘ + Enter to analyze",
     charCount: (count: number) => `${formatNumber(count)} / 2,000`,
@@ -61,17 +66,49 @@ const en = {
       `${formatNumber(count)} of 2,000 characters used.`,
     errorMin: "Please describe your symptoms in at least 10 characters.",
     errorMax: "Please keep your description under 2,000 characters.",
-    editedNote: "You edited the text — analyze again to update these results.",
+    editedNote: "You edited the text — start the assessment again to update these results.",
   },
   empty: {
     title: "What you'll get",
     terms: "Standardized terms in English and Arabic",
     explanations: "Plain-language explanations for each term",
-    safety: "Plain-language terms and clarifications",
+    safety: "The most likely diagnosis, with alternatives, and follow-up questions",
+  },
+  followUps: {
+    title: "Follow-up questions",
+    subtitle:
+      "Your answers keep the assessment specific. Write in your own words.",
+    roundLabel: (current: number, total: number) =>
+      `Question round ${formatNumber(current)} of ${formatNumber(total)}`,
+    questionLabel: (position: number) => `Question ${formatNumber(position)}`,
+    answerPlaceholder: "Type your answer…",
+    submit: "Send answers",
+    submitting: "Sending answers…",
+    startOver: "Start over",
+    demoNotice:
+      "Demo mode: these follow-up questions are sample content, not a real AI assessment.",
+    validation: "Please answer every question before sending.",
+    readyAnnounce: (current: number, total: number) =>
+      `Follow-up questions ready. Question round ${formatNumber(current)} of ${formatNumber(total)}.`,
+  },
+  impression: {
+    title: "Clinical impression",
+    subtitle:
+      "The most likely diagnosis from your symptoms and answers, with alternatives. It is not a confirmed diagnosis.",
+    primaryLabel: "Most likely diagnosis",
+    confidence: "Confidence",
+    confidenceLevel: {
+      low: "Low",
+      moderate: "Moderate",
+      high: "High",
+    },
+    differentials: "Other possibilities",
+    rationale: "Why this assessment",
+    empty: "No other possibilities were listed.",
   },
   results: {
-    heading: "Your medical language summary",
-    actionsLabel: "Summary actions",
+    heading: "Your clinical assessment",
+    actionsLabel: "Assessment actions",
     detectedLabel: "Language detected",
     detected: {
       "ar-EG": "Egyptian Arabic",
@@ -82,21 +119,15 @@ const en = {
     },
     termCount: (count: number) =>
       `${formatNumber(count)} ${count === 1 ? "term" : "terms"}`,
-    notDiagnosis: "Not a diagnosis",
-    copy: "Copy summary",
-    copied: "Copied",
-    copyFailed: "Copy failed",
-    copyAnnounce: "Summary copied to clipboard.",
-    copyAnnounceError:
-      "Could not copy the summary. You can select the text and copy it manually.",
+    notDiagnosis: "AI assessment, not a confirmed diagnosis",
     print: "Print / Save PDF",
     printHint: "Choose 'Save as PDF' in the print dialog.",
-    loadingTitle: "Analyzing your description…",
-    loadingBody: "Preparing clinical terminology and clarifications.",
+    loadingTitle: "Preparing your follow-up questions…",
+    loadingBody: "Reviewing your description so the questions stay specific.",
     stillWorking: "Still working…",
     readyAnnounce: (terms: number, questions: number) =>
-      `Results ready. ${formatNumber(terms)} ${terms === 1 ? "term" : "terms"} and ${formatNumber(questions)} ${
-        questions === 1 ? "missing detail" : "missing details"
+      `Results ready. ${formatNumber(terms)} ${terms === 1 ? "term" : "terms"}, a clinical impression, and ${formatNumber(questions)} ${
+        questions === 1 ? "remaining detail" : "remaining details"
       }.`,
     generated: "Generated",
     demo: {
@@ -112,9 +143,8 @@ const en = {
       normalizedLabel: "Clinical description",
       normalizedChip: "Clinical",
       normalizedHelp:
-        "A concise clinical restatement in both languages, using standardized terms. Not a diagnosis.",
-      notDiagnosisLine:
-        "This summary is not a diagnosis. If you have severe or worsening symptoms, contact a healthcare professional.",
+        "A concise clinical restatement in both languages, using standardized terms. An AI assessment, not a confirmed diagnosis.",
+      notDiagnosisLine: "This is an AI assessment, not a confirmed diagnosis.",
     },
     errors: {
       title: "We couldn't complete the analysis",
@@ -152,7 +182,7 @@ const en = {
     empty: "No standardized terms were identified in this description.",
   },
   clinical: {
-    title: "Possible clinical context — not a diagnosis",
+    title: "Possible clinical context — AI assessment",
     intro:
       "These are possibilities suggested by the wording, not conclusions. A clinician interprets them.",
     confidence: "Confidence",
@@ -171,7 +201,7 @@ const en = {
   reminders: {
     title: "Medicine reminders",
     subtitle:
-      "Set a repeating interval or a daily time. Tabibna rings and shows a notification when it is time.",
+      "Set a repeating interval or a daily time. VivaValve rings and shows a notification when it is time.",
     howItWorks:
       "Reminders run inside this browser tab. Keep it open so the alarm can sound.",
     newReminder: "New reminder",
@@ -211,26 +241,66 @@ const en = {
     alarmDose: (dose: string) => `Dose: ${dose}`,
     ringing: "Alarm ringing",
     permissionNote:
-      "Tabibna does not give dosing advice. Enter the schedule your doctor or pharmacist prescribed.",
+      "VivaValve does not give dosing advice. Enter the schedule your doctor or pharmacist prescribed.",
     validationMedicine: "Enter a medicine name.",
     validationInterval: "Choose an interval between 1 and 24 hours.",
     validationTime: "Choose a time.",
     saved: "Reminder saved.",
     deleted: "Reminder deleted.",
   },
+  echo: {
+    title: "EchoBridge",
+    subtitle:
+      "Paste an echocardiography report and get plain-language explanations of what it says.",
+    label: "Echocardiography report",
+    placeholder: "Paste the report text here…",
+    sample: "Use sample report",
+    sampleLabel: "Sample echocardiography report",
+    sampleText:
+      "Transthoracic echocardiography report. Aortic valve: calcified trileaflet valve with reduced excursion. Aortic valve area 0.8 cm² by the continuity equation. Peak aortic velocity 4.1 m/s, mean pressure gradient 42 mmHg. Left ventricle: concentric left ventricular hypertrophy, wall thickness 14 mm, ejection fraction 60%. Mild mitral regurgitation. Impression: severe aortic stenosis with concentric LVH. Normal left ventricular systolic function.",
+    submit: "Explain this report",
+    submitting: "Explaining your report…",
+    summaryTitle: "Plain-language summary",
+    termsTitle: "Terms explained",
+    termsCount: (count: number) =>
+      `${formatNumber(count)} ${count === 1 ? "term" : "terms"}`,
+    empty: "No terms were identified in this report.",
+    note: "This explains terminology only; it is not a diagnosis. Discuss the report with your cardiologist.",
+    startOver: "Start over",
+    validation: "Paste at least 10 characters from the report.",
+    charCount: (count: number) => `${formatNumber(count)} / 4,000`,
+    termEn: "English term",
+    termAr: "Arabic term",
+    explanation: "Explanation",
+    errors: {
+      title: "We couldn't explain the report",
+      network:
+        "There seems to be a connection problem. Check your internet connection and try again.",
+      timeout: "Explaining the report took longer than expected. Please try again.",
+      rateLimit: "Too many requests in a short time. Please wait a moment and try again.",
+      dailyQuota:
+        "The free explanation service has used its daily request allowance, so new explanations are paused until the daily reset. Please try again later.",
+      server:
+        "Something went wrong on our side while explaining the report. Please try again shortly.",
+      ai: "The explanation service is unavailable right now. Please try again shortly.",
+      invalid: "The report couldn't be accepted. Please check it and try again.",
+      unexpected: "The service returned an unexpected response. Please try again.",
+      retry: "Try again",
+    },
+  },
   disclaimers: {
-    title: "Safety and limitations",
+    title: "About this assessment",
     productLabel: "About this tool",
   },
   footer: {
     disclaimer:
-      "Tabibna AI is a medical terminology aid, not a diagnosis or treatment. If you feel very unwell, seek local emergency help.",
-    brand: "Tabibna AI — clear medical language, in both languages.",
+      "VivaValve AI is a medical language aid, not a confirmed diagnosis or treatment. If you feel very unwell, seek local emergency help.",
+    brand: "VivaValve AI — clear medical language, in both languages.",
   },
   report: {
-    titleEnglish: "Medical language summary",
-    titleArabic: "ملخص اللغة الطبية",
-    brand: "Tabibna AI",
+    titleEnglish: "Clinical assessment",
+    titleArabic: "تقييم سريري",
+    brand: "VivaValve AI",
     demo: "DEMO — synthetic sample output; no AI was used.",
     generated: "Generated",
     original: "Original description",
@@ -238,11 +308,14 @@ const en = {
     normalizedArabic: "Clinical description — Arabic",
     terminology: "Terminology",
     clarifications: "Missing information",
-    clinical: "Possible clinical context — not a diagnosis",
+    clinical: "Possible clinical context — AI assessment",
+    impression: "Clinical impression",
+    followUps: "Follow-up questions",
+    answerLabel: "Your answer",
     disclaimers: "Disclaimers",
     footerEnglish:
-      "Tabibna AI is a medical terminology aid, not a diagnosis or treatment.",
-    footerArabic: "طبيبنا AI مساعد للمصطلحات الطبية، مش تشخيص أو علاج.",
+      "VivaValve AI is a medical terminology aid, not a confirmed diagnosis or treatment.",
+    footerArabic: "VivaValve AI مساعد للمصطلحات الطبية، مش تشخيص مؤكد أو علاج.",
   },
 };
 
@@ -250,9 +323,9 @@ export type Copy = typeof en;
 
 const ar: Copy = {
   meta: {
-    title: "طبيبنا AI — لغتك الطبية بشكل أوضح",
+    title: "VivaValve AI — لغتك الطبية بشكل أوضح",
     description:
-      "حوّل وصف أعراضك بالعامية المصرية أو الإنجليزية إلى مصطلحات طبية موحدة بالعربي والإنجليزي. ده مش تشخيص.",
+      "VivaValve AI بيحوّل وصف أعراضك بالعامية المصرية أو الإنجليزية إلى لغة طبية واضحة، بيسألك شوية أسئلة متابعة، وبيشرح تقارير إيكو القلب بلغة بسيطة. ده مش تشخيص مؤكد.",
   },
   skipLink: "تخطَّ إلى المحتوى الرئيسي",
   languages: {
@@ -261,13 +334,14 @@ const ar: Copy = {
   },
   nav: {
     label: "الأقسام",
-    analyze: "حلّل الأعراض",
+    followUps: "متابعة الأعراض",
+    echo: "إيكو بريدج",
     reminders: "تذكيرات",
   },
   header: {
-    brandWordmark: "Tabibna",
+    brandWordmark: "VivaValve",
     brandAccent: "AI",
-    brandLabel: "طبيبنا AI",
+    brandLabel: "VivaValve AI",
     languageGroup: "اللغة",
     english: "English",
     arabic: "العربية",
@@ -282,10 +356,10 @@ const ar: Copy = {
     },
   },
   hero: {
-    overline: "TABIBNA AI · MEDICAL LANGUAGE",
-    title: "حوّل وصف أعراضك إلى مصطلحات طبية واضحة.",
+    overline: "VIVAVALVE AI · MEDICAL LANGUAGE",
+    title: "من الأعراض إلى تقييم سريري واضح.",
     description:
-      "اوصف اللي حاسس بيه بالعامية المصرية أو الإنجليزية. طبيبنا بيرتبه في مصطلحات طبية موحدة — وده مش تشخيص.",
+      "اوصف اللي حاسس بيه بالعامية المصرية أو الإنجليزية. VivaValve بيرتبه في مصطلحات طبية موحدة، بيسألك شوية أسئلة متابعة، وبيقترح التشخيص الأرجح مع بدائل. ده مش تشخيص مؤكد.",
   },
   form: {
     regionLabel: "نموذج وصف الأعراض",
@@ -300,7 +374,7 @@ const ar: Copy = {
     exampleEnglishLabel: "إنجليزي",
     exampleEnglishText:
       "I've had a headache since yesterday and feel dizzy when I stand up. I also have a mild fever.",
-    submit: "حلّل الأعراض",
+    submit: "ابدأ التقييم",
     submitting: "جاري التحليل…",
     shortcut: "Ctrl أو ⌘ + Enter للتحليل",
     charCount: (count: number) => `${formatNumber(count)} / 2,000`,
@@ -308,17 +382,48 @@ const ar: Copy = {
       `${formatNumber(count)} من 2,000 حرف مستخدم.`,
     errorMin: "اوصف أعراضك في 10 حروف على الأقل.",
     errorMax: "خلي الوصف أقل من 2,000 حرف.",
-    editedNote: "غيّرت النص — حلّل تاني لتحديث النتائج.",
+    editedNote: "غيّرت النص — ابدأ التقييم تاني لتحديث النتائج.",
   },
   empty: {
     title: "اللي هتحصله",
     terms: "مصطلحات موحدة بالإنجليزي والعربي",
     explanations: "شرح مبسط لكل مصطلح",
-    safety: "مصطلحات بلغة بسيطة وتفاصيل ناقصة",
+    safety: "التشخيص الأرجح مع بدائل، وأسئلة متابعة",
+  },
+  followUps: {
+    title: "أسئلة متابعة",
+    subtitle: "إجاباتك بتخلي التقييم أدق. اكتب بالطريقة اللي تريحك.",
+    roundLabel: (current: number, total: number) =>
+      `جولة الأسئلة ${formatArabicNumber(current)} من ${formatArabicNumber(total)}`,
+    questionLabel: (position: number) => `السؤال ${formatArabicNumber(position)}`,
+    answerPlaceholder: "اكتب إجابتك…",
+    submit: "ابعت الإجابات",
+    submitting: "بنبعت الإجابات…",
+    startOver: "ابدأ من جديد",
+    demoNotice:
+      "وضع تجريبي: أسئلة المتابعة دي محتوى عيّنة، مش تقييم حقيقي بالذكاء الاصطناعي.",
+    validation: "جاوب على كل سؤال قبل ما تبعت.",
+    readyAnnounce: (current: number, total: number) =>
+      `أسئلة المتابعة جاهزة. جولة الأسئلة ${formatArabicNumber(current)} من ${formatArabicNumber(total)}.`,
+  },
+  impression: {
+    title: "الانطباع السريري",
+    subtitle:
+      "التشخيص الأرجح بناءً على أعراضك وإجاباتك، مع بدائل. ده مش تشخيص مؤكد.",
+    primaryLabel: "التشخيص الأرجح",
+    confidence: "درجة الثقة",
+    confidenceLevel: {
+      low: "منخفضة",
+      moderate: "متوسطة",
+      high: "عالية",
+    },
+    differentials: "احتمالات تانية",
+    rationale: "ليه التقييم ده",
+    empty: "مفيش احتمالات تانية اتذكرت.",
   },
   results: {
-    heading: "ملخص لغتك الطبية",
-    actionsLabel: "إجراءات الملخص",
+    heading: "تقييمك السريري",
+    actionsLabel: "إجراءات التقييم",
     detectedLabel: "اللغة المكتشفة",
     detected: {
       "ar-EG": "عامية مصرية",
@@ -329,20 +434,14 @@ const ar: Copy = {
     },
     termCount: (count: number) =>
       `${formatNumber(count)} ${count === 1 ? "مصطلح" : count === 2 ? "مصطلحين" : "مصطلحات"}`,
-    notDiagnosis: "مش تشخيص",
-    copy: "نسخ الملخص",
-    copied: "تم النسخ",
-    copyFailed: "فشل النسخ",
-    copyAnnounce: "تم نسخ الملخص.",
-    copyAnnounceError:
-      "مقدرناش ننسخ الملخص. تقدر تحدد النص وتنسخه بنفسك.",
+    notDiagnosis: "تقييم بالذكاء الاصطناعي، مش تشخيص مؤكد",
     print: "طباعة / حفظ PDF",
     printHint: "اختر «حفظ كـ PDF» من نافذة الطباعة.",
-    loadingTitle: "بنحلل وصفك…",
-    loadingBody: "جارٍ إعداد المصطلحات السريرية والتفاصيل الناقصة.",
+    loadingTitle: "بنجهز أسئلة المتابعة…",
+    loadingBody: "بنراجع وصفك عشان الأسئلة تكون دقيقة.",
     stillWorking: "لسه بنحلل…",
     readyAnnounce: (terms: number, questions: number) =>
-      `النتائج جاهزة. ${formatNumber(terms)} مصطلحات و${formatNumber(questions)} تفاصيل ناقصة.`,
+      `النتائج جاهزة. ${formatNumber(terms)} مصطلحات، وانطباع سريري، و${formatNumber(questions)} تفاصيل ناقصة.`,
     generated: "تم الإنشاء",
     demo: {
       badge: "عرض تجريبي",
@@ -357,9 +456,8 @@ const ar: Copy = {
       normalizedLabel: "وصف سريري",
       normalizedChip: "سريري",
       normalizedHelp:
-        "إعادة صياغة سريرية موجزة باللغتين باستخدام مصطلحات موحدة. ليست تشخيصًا.",
-      notDiagnosisLine:
-        "الملخص ده مش تشخيص. لو عندك أعراض شديدة أو بتزيد، تواصل مع مختص رعاية صحية.",
+        "إعادة صياغة سريرية موجزة باللغتين باستخدام مصطلحات موحدة. ده تقييم بالذكاء الاصطناعي، مش تشخيص مؤكد.",
+      notDiagnosisLine: "ده تقييم بالذكاء الاصطناعي، مش تشخيص مؤكد.",
     },
     errors: {
       title: "مقدرناش نكمل التحليل",
@@ -395,7 +493,7 @@ const ar: Copy = {
     empty: "مفيش مصطلحات موحدة اتحددت من الوصف ده.",
   },
   clinical: {
-    title: "سياق سريري محتمل — مش تشخيص",
+    title: "سياق سريري محتمل — تقييم بالذكاء الاصطناعي",
     intro:
       "دي احتمالات من صياغة الكلام، مش استنتاجات نهائية. الطبيب هو اللي يفسرها.",
     confidence: "درجة الثقة",
@@ -414,7 +512,7 @@ const ar: Copy = {
   reminders: {
     title: "تذكير الأدوية",
     subtitle:
-      "حدّد كل كم ساعة تبيه، أو وقت يومي ثابت. طبيبنا ينوّه ويطلع إشعار في الوقت ده.",
+      "حدّد كل كم ساعة تبيه، أو وقت يومي ثابت. VivaValve ينوّه ويطلع إشعار في الوقت ده.",
     howItWorks:
       "التذكيرات شغالة في تبويب المتصفح ده. خليه مفتوح عشان الإنذار يطلع.",
     newReminder: "تذكير جديد",
@@ -452,26 +550,63 @@ const ar: Copy = {
     alarmDose: (dose: string) => `الجرعة: ${dose}`,
     ringing: "الإنذار بيرنّ",
     permissionNote:
-      "طبيبنا مش بيحدد الجرعات. دخّل الموعد اللي الدكتور أو الصيدلي حدده.",
+      "VivaValve مش بيحدد الجرعات. دخّل الموعد اللي الدكتور أو الصيدلي حدده.",
     validationMedicine: "اكتب اسم الدواء.",
     validationInterval: "اختر مدة بين ساعة و٢٤ ساعة.",
     validationTime: "اختر وقت.",
     saved: "تم حفظ التذكير.",
     deleted: "تم حذف التذكير.",
   },
+  echo: {
+    title: "EchoBridge",
+    subtitle: "الصق تقرير إيكو على القلب وهنشرحلك اللي فيه بلغة بسيطة.",
+    label: "تقرير إيكو القلب",
+    placeholder: "الصق نص التقرير هنا…",
+    sample: "استخدم تقرير تجريبي",
+    sampleLabel: "تقرير إيكو تجريبي",
+    sampleText:
+      "تقرير إيكو على القلب عبر الصدر. الصمام الأورطي: صمام ثلاثي الشرفات متكلس مع حركة محدودة. مساحة الصمام الأورطي 0.8 سم² بمعادلة الاستمرارية. أقصى سرعة للدم عبر الصمام 4.1 م/ث، ومتوسط فرق الضغط 42 مم زئبق. البطين الأيسر: تضخم متحدة المركز في عضلة البطين، سماكة الجدار 14 مم، وكسر القذف 60%. ارتجاع خفيف في الصمام الميترالي. الانطباع: ضيق شديد في الصمام الأورطي مع تضخم البطين الأيسر. وظيفة البطين الأيسر الانقباضية طبيعية.",
+    submit: "اشرح التقرير",
+    submitting: "بنشرح تقريرك…",
+    summaryTitle: "ملخص بلغة بسيطة",
+    termsTitle: "المصطلحات المشروحة",
+    termsCount: (count: number) =>
+      `${formatNumber(count)} ${count === 1 ? "مصطلح" : count === 2 ? "مصطلحين" : "مصطلحات"}`,
+    empty: "مفيش مصطلحات اتحددت في التقرير ده.",
+    note: "ده شرح للمصطلحات بس، مش تشخيص. ناقش التقرير مع طبيب القلب.",
+    startOver: "ابدأ من جديد",
+    validation: "الصق ١٠ حروف على الأقل من التقرير.",
+    charCount: (count: number) => `${formatNumber(count)} / 4,000`,
+    termEn: "المصطلح بالإنجليزي",
+    termAr: "المصطلح بالعربي",
+    explanation: "الشرح",
+    errors: {
+      title: "مقدرناش نشرح التقرير",
+      network: "في مشكلة في الاتصال. اتأكد من الإنترنت وجرّب تاني.",
+      timeout: "شرح التقرير خد وقت أطول من المتوقع. جرّب تاني.",
+      rateLimit: "في محاولات كتير في وقت قصير. استنى شوية وجرّب تاني.",
+      dailyQuota:
+        "خدمة الشرح المجانية خلصت نصيبها اليومي من الطلبات، فالشرح الجديد متوقف لحد ما يعمل تحديث يومي. جرّب تاني بعدين.",
+      server: "حصلت مشكلة عندنا وإحنا بنشرح التقرير. جرّب تاني بعد شوية.",
+      ai: "خدمة الشرح مش متاحة دلوقتي. جرّب تاني بعد شوية.",
+      invalid: "التقرير مش مقبول. راجعه وجرّب تاني.",
+      unexpected: "رد غير متوقع من الخدمة. جرّب تاني.",
+      retry: "جرّب تاني",
+    },
+  },
   disclaimers: {
-    title: "السلامة والحدود",
+    title: "عن التقييم ده",
     productLabel: "عن الأداة",
   },
   footer: {
     disclaimer:
-      "طبيبنا AI مساعد للمصطلحات الطبية، مش تشخيص أو علاج. لو حاسس إنك تعبان جدًا، اطلب مساعدة الطوارئ في بلدك.",
-    brand: "طبيبنا AI — لغة طبية واضحة باللغتين.",
+      "VivaValve AI مساعد للمصطلحات الطبية، مش تشخيص مؤكد أو علاج. لو حاسس إنك تعبان جدًا، اطلب مساعدة الطوارئ في بلدك.",
+    brand: "VivaValve AI — لغة طبية واضحة باللغتين.",
   },
   report: {
-    titleEnglish: "Medical language summary",
-    titleArabic: "ملخص اللغة الطبية",
-    brand: "Tabibna AI",
+    titleEnglish: "Clinical assessment",
+    titleArabic: "تقييم سريري",
+    brand: "VivaValve AI",
     demo: "عرض تجريبي — الناتج ده عيّنة مش تحليل حقيقي، وبدون استخدام ذكاء اصطناعي.",
     generated: "تم الإنشاء",
     original: "الوصف الأصلي",
@@ -479,11 +614,14 @@ const ar: Copy = {
     normalizedArabic: "الوصف السريري — العربية",
     terminology: "المصطلحات",
     clarifications: "معلومات ناقصة",
-    clinical: "سياق سريري محتمل — مش تشخيص",
+    clinical: "سياق سريري محتمل — تقييم بالذكاء الاصطناعي",
+    impression: "الانطباع السريري",
+    followUps: "أسئلة المتابعة",
+    answerLabel: "إجابتك",
     disclaimers: "إخلاء المسؤولية",
     footerEnglish:
-      "Tabibna AI is a medical terminology aid, not a diagnosis or treatment.",
-    footerArabic: "طبيبنا AI مساعد للمصطلحات الطبية، مش تشخيص أو علاج.",
+      "VivaValve AI is a medical terminology aid, not a confirmed diagnosis or treatment.",
+    footerArabic: "VivaValve AI مساعد للمصطلحات الطبية، مش تشخيص مؤكد أو علاج.",
   },
 };
 

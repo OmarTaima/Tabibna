@@ -1,14 +1,14 @@
 {
-  "name": "tabibna-ai",
+  "name": "vivavalve",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
-  "description": "Translate Egyptian Arabic symptom descriptions into clear, standardized medical language.",
+  "description": "VivaValve — bilingual medical language, follow-up assessment, and echocardiography interpretation.",
   "scripts": {
     "dev": "concurrently -k -n api,web -c cyan,green \"npm:dev:server\" \"npm:dev:web\"",
     "dev:web": "vite",
     "dev:server": "tsx watch server/src/index.ts",
-    "build": "tsc --noEmit && vite build",
+    "build": "npm run typecheck && npm run typecheck:server && vite build",
     "typecheck": "tsc --noEmit",
     "typecheck:server": "tsc -p tsconfig.server.json --noEmit",
     "test:server": "tsx server/tests/smoke.ts && tsx server/tests/failure-paths.ts && tsx server/tests/prompt.ts && tsx server/tests/live-ai.ts",

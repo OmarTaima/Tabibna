@@ -4,6 +4,7 @@ import {
   computeNextTrigger,
   createReminder,
   isDue,
+  LEGACY_REMINDERS_STORAGE_KEY,
   loadReminders,
   REMINDERS_STORAGE_KEY,
   saveReminders,
@@ -163,6 +164,12 @@ try {
   passed("isDue covers the normal trigger and the snooze path");
 
   const storage = installStorage();
+  assert.equal(
+    REMINDERS_STORAGE_KEY,
+    "vivavalve.reminders.v1",
+    "reminders use the VivaValve storage key",
+  );
+
   const first = createReminder(
     { medicine: "Vitamin D", dose: "", schedule: intervalSchedule },
     anchor,
@@ -192,7 +199,33 @@ try {
   storage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify({ not: "an array" }));
   assert.deepEqual(loadReminders(), [], "a non-array payload is dropped");
 
-  passed("storage round-trips reminders and survives corrupt data");
+  storage.clear();
+  storage.setItem(LEGACY_REMINDERS_STORAGE_KEY, JSON.stringify(list));
+  assert.deepEqual(
+    loadReminders(),
+    list,
+    "legacy Tabibna reminders migrate to the new key",
+  );
+  assert.equal(
+    storage.getItem(REMINDERS_STORAGE_KEY),
+    JSON.stringify(list),
+    "the migrated list is written under the new key",
+  );
+  assert.equal(
+    storage.getItem(LEGACY_REMINDERS_STORAGE_KEY),
+    null,
+    "the legacy key is removed after migration",
+  );
+
+  storage.setItem(LEGACY_REMINDERS_STORAGE_KEY, JSON.stringify([first]));
+  storage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify([second]));
+  assert.deepEqual(
+    loadReminders(),
+    [second],
+    "the new key wins when both keys exist",
+  );
+
+  passed("storage round-trips reminders, survives corrupt data, and migrates the legacy key");
 
   console.log("All client reminder tests passed.");
 } catch (error) {

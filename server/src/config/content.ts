@@ -1,23 +1,33 @@
 import type { LocalizedText } from "../../../shared/contract.ts";
 import { config } from "./env.ts";
 
-export const APP_VERSION = "1.0.0";
+export const APP_VERSION = "2.0.0";
 
 export const AI_REQUEST_TIMEOUT_MS = config.aiRequestTimeoutMs;
 
 export const DEMO_NOTICE: LocalizedText = {
-  en: "Synthetic demo output: no AI model was used. This is a terminology demonstration only and is not for medical decisions.",
-  ar: "مخرجات تجريبية اصطناعية: لم يُستخدم أي نموذج ذكاء اصطناعي. هذا عرض توضيحي للمصطلحات فقط وليس لاتخاذ قرارات طبية.",
+  en: "Synthetic demo output: no AI model was used. VivaValve is showing pattern-based sample content only, not a medical assessment.",
+  ar: "مخرجات تجريبية اصطناعية: لم يُستخدم أي نموذج ذكاء اصطناعي. يعرض VivaValve محتوى تجريبيًا مبنيًا على أنماط فقط، وليس تقييمًا طبيًا.",
 };
 
 export const LIVE_NOTICE: LocalizedText = {
-  en: "AI-generated analysis. It standardizes the wording you provided and does not diagnose or prescribe. Review it with a qualified healthcare professional.",
-  ar: "تحليل مُولَّد بالذكاء الاصطناعي. يعيد صياغة ما كتبته بمصطلحات معيارية ولا يشخّص ولا يصف أدوية. راجعه مع مختص رعاية صحية مؤهل.",
+  en: "AI-generated assessment. It restates your wording in clinical terms, asks follow-up questions, and suggests a possible explanation. It is not a confirmed diagnosis and does not prescribe. Review it with a qualified healthcare professional.",
+  ar: "تقييم مُولَّد بالذكاء الاصطناعي. يعيد صياغة كلامك بمصطلحات سريرية ويطرح أسئلة متابعة ويقترح تفسيرًا محتملًا. وهو ليس تشخيصًا مؤكدًا ولا يصف أدوية. راجعه مع مختص رعاية صحية مؤهل.",
+};
+
+export const ECHO_LIVE_NOTICE: LocalizedText = {
+  en: "AI-generated glossary. It explains echocardiography report terms in plain language and does not diagnose or prescribe. Review the report itself with a qualified healthcare professional.",
+  ar: "شرح مُولَّد بالذكاء الاصطناعي. يوضّح مصطلحات تقرير تخطيط صدى القلب بلغة مبسطة ولا يشخّص ولا يصف أدوية. راجع التقرير نفسه مع مختص رعاية صحية مؤهل.",
+};
+
+export const ECHO_DEMO_NOTICE: LocalizedText = {
+  en: "Synthetic demo glossary: no AI model was used. VivaValve matched known echocardiography keywords and shows generic explanations only, not a medical assessment.",
+  ar: "شرح تجريبي اصطناعي: لم يُستخدم أي نموذج ذكاء اصطناعي. يطابق VivaValve كلمات مفتاحية معروفة في تقارير تخطيط صدى القلب ويعرض تفسيرات عامة فقط، وليس تقييمًا طبيًا.",
 };
 
 export const FULL_DISCLAIMER: LocalizedText = {
-  en: "Tabibna AI is a medical terminology assistant, not a diagnosis or treatment service. It does not replace an assessment by a qualified healthcare professional and never recommends medication. If you are very unwell, seek local emergency care.",
-  ar: "طبيبنا AI أداة مساعدة في المصطلحات الطبية، وليست خدمة تشخيص أو علاج. لا تُغني عن تقييم مختص رعاية صحية مؤهل، ولا توصي بأي أدوية. إذا كنت تشعر بتوعك شديد، فاطلب رعاية طارئة محلية.",
+  en: "VivaValve provides AI-generated health information, not a confirmed diagnosis. Its assessments are possibilities based on what you reported, they do not replace an assessment by a qualified healthcare professional, and VivaValve never recommends medication. If you feel very unwell, seek local emergency care.",
+  ar: "يقدّم VivaValve معلومات صحية مُولَّدة بالذكاء الاصطناعي، وليست تشخيصًا مؤكدًا. التقييمات الواردة احتمالات مبنية على ما ذكرته، ولا تُغني عن تقييم مختص رعاية صحية مؤهل، ولا يوصي VivaValve بأي أدوية. إذا كنت تشعر بتوعك شديد، فاطلب رعاية طارئة محلية.",
 };
 
 export const AI_ERROR_MESSAGE =
@@ -37,6 +47,9 @@ export const AI_TIMEOUT_MESSAGE =
 
 export const RATE_LIMITED_ANALYZE_MESSAGE =
   "Too many analysis requests. Please wait a few minutes and try again.";
+
+export const MISSING_ANSWERS_MESSAGE =
+  "Please answer the follow-up questions before requesting the assessment.";
 
 export const INTERNAL_ERROR_MESSAGE = "Something went wrong. Please try again.";
 

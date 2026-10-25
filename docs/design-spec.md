@@ -1,4 +1,4 @@
-# Design specification — Tabibna AI
+# Design specification — VivaValve
 
 The full working design spec lives in the team conversation. Core constraints:
 

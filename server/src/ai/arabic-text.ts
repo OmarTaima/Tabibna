@@ -50,5 +50,20 @@ export function correctArabicParesthesiaSpelling(
         ar: correctParesthesiaSpelling(item.basis.ar),
       },
     })),
+    impression: {
+      ...content.impression,
+      primary: {
+        ...content.impression.primary,
+        ar: correctParesthesiaSpelling(content.impression.primary.ar),
+      },
+      differentials: content.impression.differentials.map((item) => ({
+        ...item,
+        ar: correctParesthesiaSpelling(item.ar),
+      })),
+      rationale: {
+        ...content.impression.rationale,
+        ar: correctParesthesiaSpelling(content.impression.rationale.ar),
+      },
+    },
   };
 }

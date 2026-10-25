@@ -23,5 +23,5 @@
     },
     "types": ["node", "vite/client"]
   },
-  "include": ["src", "shared", "server", "api", "vite.config.ts"]
+  "include": ["src", "shared", "vite.config.ts"]
 }

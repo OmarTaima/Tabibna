@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
-import type { MedicalAnalysis } from "@shared/contract";
+import type {
+  FollowUpAnswer,
+  FollowUpQuestion,
+  MedicalAnalysis,
+} from "@shared/contract";
 import { useLocale } from "@/i18n/use-locale";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -23,7 +27,13 @@ function ReportSection({
   );
 }
 
-export function PrintReport({ analysis }: { analysis: MedicalAnalysis }) {
+type PrintReportProps = {
+  analysis: MedicalAnalysis;
+  answers: FollowUpAnswer[];
+  questions: FollowUpQuestion[];
+};
+
+export function PrintReport({ analysis, answers, questions }: PrintReportProps) {
   const { locale, copy } = useLocale();
   const generated = formatDateTime(analysis.meta.generatedAt, locale);
   const mock = analysis.meta.mode === "mock";
@@ -37,6 +47,9 @@ export function PrintReport({ analysis }: { analysis: MedicalAnalysis }) {
       : analysis.detectedLanguage === "ar" || analysis.detectedLanguage === "ar-EG"
         ? "ar"
         : undefined;
+  const questionById = new Map(
+    questions.map((question) => [question.id, question]),
+  );
 
   return (
     <article
@@ -154,6 +167,110 @@ export function PrintReport({ analysis }: { analysis: MedicalAnalysis }) {
                 </p>
               </div>
             ))}
+          </div>
+        </ReportSection>
+
+        <ReportSection title={copy.report.impression}>
+          <div className="break-inside-avoid rounded border border-line p-3">
+            <div
+              className="flex flex-wrap items-center justify-between gap-2"
+              lang={locale}
+              dir={localizedDir}
+            >
+              <p className="text-[9pt] font-semibold text-brand">
+                {copy.impression.primaryLabel}
+              </p>
+              <p className="text-[8.5pt] font-semibold text-ink">
+                {copy.impression.confidence}:{" "}
+                {copy.impression.confidenceLevel[analysis.impression.confidence]}
+              </p>
+            </div>
+
+            <div className="mt-2 grid grid-cols-2 gap-4">
+              {languages.map((language) => (
+                <div
+                  key={language}
+                  lang={language}
+                  dir={language === "ar" ? "rtl" : "ltr"}
+                >
+                  <p className="text-[8.5pt] font-semibold text-bodytext">
+                    {language === "ar"
+                      ? copy.languages.arabic
+                      : copy.languages.english}
+                  </p>
+                  <p
+                    className={cn(
+                      "font-semibold text-ink",
+                      language === "ar" ? "print-text-ar" : "print-text-en",
+                    )}
+                  >
+                    {analysis.impression.primary[language]}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 border-t border-line pt-2">
+              <p
+                lang={locale}
+                dir={localizedDir}
+                className="text-[9pt] font-semibold text-ink"
+              >
+                {copy.impression.differentials}
+              </p>
+              {analysis.impression.differentials.length === 0 ? (
+                <p className="mt-1 text-[9pt] text-bodytext">
+                  {copy.impression.empty}
+                </p>
+              ) : (
+                <ul className="mt-1 flex flex-col gap-1">
+                  {analysis.impression.differentials.map((item, index) => (
+                    <li key={index} className="grid grid-cols-2 gap-4">
+                      {languages.map((language) => (
+                        <p
+                          key={language}
+                          lang={language}
+                          dir={language === "ar" ? "rtl" : "ltr"}
+                          className={cn(
+                            "text-ink",
+                            language === "ar"
+                              ? "print-text-ar"
+                              : "print-text-en",
+                          )}
+                        >
+                          {item[language]}
+                        </p>
+                      ))}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="mt-3 border-t border-line pt-2">
+              <p
+                lang={locale}
+                dir={localizedDir}
+                className="text-[9pt] font-semibold text-ink"
+              >
+                {copy.impression.rationale}
+              </p>
+              <div className="mt-1 grid grid-cols-2 gap-4">
+                {languages.map((language) => (
+                  <p
+                    key={language}
+                    lang={language}
+                    dir={language === "ar" ? "rtl" : "ltr"}
+                    className={cn(
+                      "text-ink",
+                      language === "ar" ? "print-text-ar" : "print-text-en",
+                    )}
+                  >
+                    {analysis.impression.rationale[language]}
+                  </p>
+                ))}
+              </div>
+            </div>
           </div>
         </ReportSection>
 
@@ -299,6 +416,72 @@ export function PrintReport({ analysis }: { analysis: MedicalAnalysis }) {
                 </li>
               ))}
             </ul>
+          </ReportSection>
+        ) : null}
+
+        {answers.length > 0 ? (
+          <ReportSection title={copy.report.followUps}>
+            <ol className="flex flex-col gap-2">
+              {answers.map((item, index) => {
+                const question = questionById.get(item.questionId);
+
+                return (
+                  <li
+                    key={`${item.questionId}-${index}`}
+                    className="break-inside-avoid rounded border border-line p-3"
+                  >
+                    <p className="text-[10pt] font-semibold tabular-nums text-brand">
+                      {formatNumber(index + 1)}.
+                    </p>
+
+                    {question ? (
+                      <div className="mt-1 grid grid-cols-2 gap-4">
+                        <div lang="en" dir="ltr">
+                          <p className="text-[8.5pt] font-semibold text-bodytext">
+                            {copy.languages.english}
+                          </p>
+                          <p className="print-text-en text-ink">
+                            {question.en}
+                          </p>
+                        </div>
+                        <div lang="ar" dir="rtl">
+                          <p className="text-[8.5pt] font-semibold text-bodytext">
+                            {copy.languages.arabic}
+                          </p>
+                          <p className="print-text-ar text-ink">
+                            {question.ar}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p
+                        lang={locale}
+                        dir={localizedDir}
+                        className={cn("mt-1 text-ink", localizedPrint)}
+                      >
+                        {item.question}
+                      </p>
+                    )}
+
+                    <div className="mt-2 border-t border-line pt-2">
+                      <p
+                        lang={locale}
+                        dir={localizedDir}
+                        className="text-[8.5pt] font-semibold text-brand"
+                      >
+                        {copy.report.answerLabel}
+                      </p>
+                      <p
+                        dir="auto"
+                        className="mt-0.5 text-[10pt] leading-[1.7] text-ink"
+                      >
+                        {item.answer}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
           </ReportSection>
         ) : null}
 

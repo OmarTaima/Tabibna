@@ -130,7 +130,7 @@ try {
   assert.equal(workerCalls.length, 1, "the service worker shows the notification");
   assert.equal(workerCalls[0].title, "Time for your medicine");
   assert.equal(workerCalls[0].options?.body, "Reminder for Vitamin D");
-  assert.equal(workerCalls[0].options?.tag, "tabibna-medicine-reminder");
+  assert.equal(workerCalls[0].options?.tag, "vivavalve-medicine-reminder");
   assert.equal(workerCalls[0].options?.requireInteraction, true);
   assert.equal(
     NotificationStub.instances.length,

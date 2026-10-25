@@ -17,12 +17,30 @@ function validationMessage(error: ZodError): string {
     return "Please provide a description as text.";
   }
 
+  if (path === "text") {
+    if (issue.code === "too_small") {
+      return "Please paste an echocardiography report of at least 10 characters.";
+    }
+    if (issue.code === "too_big") {
+      return "Please keep the report under 4,000 characters.";
+    }
+    return "Please provide the echocardiography report as text.";
+  }
+
   if (path === "locale") {
     return "Unsupported language. Use 'en' or 'ar'.";
   }
 
+  if (path === "round") {
+    return "Please use a follow-up round between 0 and 2.";
+  }
+
+  if (path.startsWith("answers")) {
+    return "Please check the follow-up answers and try again.";
+  }
+
   if (path === "") {
-    return "Please send a JSON object with a description.";
+    return "Please send a JSON object with the required fields.";
   }
 
   return "Please check your input and try again.";

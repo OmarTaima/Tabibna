@@ -3,6 +3,7 @@ import { NOT_FOUND_MESSAGE } from "../config/content.ts";
 import { analyzeRateLimiter } from "../http/rate-limit.ts";
 import { sendError } from "../schemas/errors.ts";
 import { analyzeHandler } from "./analyze.ts";
+import { echoHandler } from "./echo.ts";
 import { healthHandler } from "./health.ts";
 
 export function createApiRouter(): Router {
@@ -15,6 +16,7 @@ export function createApiRouter(): Router {
 
   router.get("/health", healthHandler);
   router.post("/analyze", analyzeRateLimiter, analyzeHandler);
+  router.post("/echo", analyzeRateLimiter, echoHandler);
 
   router.use((_request, response) => {
     sendError(response, 404, "NOT_FOUND", NOT_FOUND_MESSAGE);

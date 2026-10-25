@@ -22,7 +22,8 @@ export type ReminderInput = {
 
 export type ReminderLocale = "en" | "ar";
 
-export const REMINDERS_STORAGE_KEY = "tabibna.reminders.v1";
+export const REMINDERS_STORAGE_KEY = "vivavalve.reminders.v1";
+export const LEGACY_REMINDERS_STORAGE_KEY = "tabibna.reminders.v1";
 
 const HOUR_MS = 3_600_000;
 const MINUTE_MS = 60_000;
@@ -250,19 +251,7 @@ function isReminder(value: unknown): value is Reminder {
   );
 }
 
-export function loadReminders(): Reminder[] {
-  const storage = getStorage();
-  if (!storage) {
-    return [];
-  }
-
-  let raw: string | null = null;
-  try {
-    raw = storage.getItem(REMINDERS_STORAGE_KEY);
-  } catch {
-    return [];
-  }
-
+function parseReminders(raw: string | null): Reminder[] {
   if (!raw) {
     return [];
   }
@@ -279,6 +268,42 @@ export function loadReminders(): Reminder[] {
   }
 
   return parsed.filter(isReminder);
+}
+
+function readStoredReminders(storage: Storage, key: string): string | null {
+  try {
+    return storage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+export function loadReminders(): Reminder[] {
+  const storage = getStorage();
+  if (!storage) {
+    return [];
+  }
+
+  const current = readStoredReminders(storage, REMINDERS_STORAGE_KEY);
+  if (current !== null) {
+    return parseReminders(current);
+  }
+
+  const legacy = readStoredReminders(storage, LEGACY_REMINDERS_STORAGE_KEY);
+  if (legacy === null) {
+    return [];
+  }
+
+  const migrated = parseReminders(legacy);
+
+  try {
+    storage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify(migrated));
+    storage.removeItem(LEGACY_REMINDERS_STORAGE_KEY);
+  } catch {
+    // Keep the legacy entry when the new key cannot be written.
+  }
+
+  return migrated;
 }
 
 export function saveReminders(list: Reminder[]): void {

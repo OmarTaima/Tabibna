@@ -6,11 +6,11 @@ export const DEMO_NOTICE: LocalizedText = {
 };
 
 export const LIVE_NOTICE: LocalizedText = {
-  en: "AI-assisted terminology mapping. It standardizes wording; it does not diagnose or prescribe.",
-  ar: "ربط للمصطلحات بمساعدة الذكاء الاصطناعي. يعيد صياغة الكلام ولا يشخّص ولا يصف أدوية.",
+  en: "AI-generated assessment. It restates your wording in clinical terms, asks follow-up questions, and suggests a possible explanation. It is not a confirmed diagnosis and does not prescribe.",
+  ar: "تقييم مُولَّد بالذكاء الاصطناعي. يعيد صياغة كلامك بمصطلحات سريرية ويطرح أسئلة متابعة ويقترح تفسيرًا محتملًا. وهو ليس تشخيصًا مؤكدًا ولا يصف أدوية.",
 };
 
 export const FULL_DISCLAIMER: LocalizedText = {
-  en: "Tabibna AI is a medical terminology assistant, not a diagnosis or treatment service. It does not replace a consultation with a qualified healthcare professional and never prescribes medication. If symptoms are severe, sudden, or worsening, seek urgent medical care.",
-  ar: "طبيبنا AI أداة مساعدة في المصطلحات الطبية، وليست خدمة تشخيص أو علاج. لا تُغني عن استشارة مختص رعاية صحية مؤهل، ولا تصف أي أدوية. إذا كانت الأعراض شديدة أو مفاجئة أو تزداد سوءًا، اطلب رعاية طبية عاجلة.",
+  en: "VivaValve provides AI-generated health information, not a confirmed diagnosis. Its assessments are possibilities based on what you reported, they do not replace an assessment by a qualified healthcare professional, and VivaValve never recommends medication. If you feel very unwell, seek local emergency care.",
+  ar: "يقدّم VivaValve معلومات صحية مُولَّدة بالذكاء الاصطناعي، وليست تشخيصًا مؤكدًا. التقييمات الواردة احتمالات مبنية على ما ذكرته، ولا تُغني عن تقييم مختص رعاية صحية مؤهل، ولا يوصي VivaValve بأي أدوية. إذا كنت تشعر بتوعك شديد، فاطلب رعاية طارئة محلية.",
 };

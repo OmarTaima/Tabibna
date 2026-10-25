@@ -1,5 +1,5 @@
 try {
-  var stored = localStorage.getItem("tabibna.locale");
+  var stored = localStorage.getItem("vivavalve.locale") || localStorage.getItem("tabibna.locale");
   var locale = stored === "ar" || stored === "en" ? stored : null;
   if (!locale) {
     locale = navigator.language && navigator.language.toLowerCase().indexOf("ar") === 0 ? "ar" : "en";

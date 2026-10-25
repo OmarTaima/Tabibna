@@ -1,6 +1,7 @@
 import type { Locale } from "@shared/contract";
 
 const countFormatter = new Intl.NumberFormat("en-US");
+const arabicCountFormatter = new Intl.NumberFormat("ar-EG");
 const termNumberFormatter = new Intl.NumberFormat("en-US", {
   minimumIntegerDigits: 2,
   useGrouping: false,
@@ -8,6 +9,10 @@ const termNumberFormatter = new Intl.NumberFormat("en-US", {
 
 export function formatNumber(value: number): string {
   return countFormatter.format(value);
+}
+
+export function formatArabicNumber(value: number): string {
+  return arabicCountFormatter.format(value);
 }
 
 export function formatTermNumber(value: number): string {

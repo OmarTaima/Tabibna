@@ -1,4 +1,10 @@
-import { BellRing, SearchCheck } from "lucide-react";
+import { MAX_FOLLOW_UP_ROUNDS, type FollowUpAnswer } from "@shared/contract";
+import {
+  BellRing,
+  HeartPulse,
+  MessagesSquare,
+  type LucideIcon,
+} from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -6,27 +12,40 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
+import { EchoBridgeView } from "@/components/echo/echo-bridge-view";
 import { EmptyState } from "@/components/form/empty-state";
 import { SymptomForm } from "@/components/form/symptom-form";
+import { FollowUpPanel } from "@/components/followups/follow-up-panel";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { AlarmOverlay } from "@/components/reminders/alarm-overlay";
 import { RemindersView } from "@/components/reminders/reminders-view";
-import { LiveRegion } from "@/components/ui/live-region";
+import { LoadingResults } from "@/components/results/loading-results";
 import { PrintReport } from "@/components/results/print-report";
 import { ResultsPanel } from "@/components/results/results-panel";
+import { LiveRegion } from "@/components/ui/live-region";
 import { useAnalysisMode } from "@/hooks/use-analysis-mode";
 import { useAnnouncer } from "@/hooks/use-announcer";
-import { useCopyToClipboard } from "@/hooks/use-clipboard";
 import { useReminders } from "@/hooks/use-reminders";
 import { useSymptomAnalysis } from "@/hooks/use-symptom-analysis";
 import { useLocale } from "@/i18n/use-locale";
-import { buildSummaryText } from "@/lib/summary-text";
 import { cn } from "@/lib/utils";
 
-type AppView = "analyze" | "reminders";
+type AppView = "followups" | "echo" | "reminders";
 
-const VIEW_ORDER: AppView[] = ["analyze", "reminders"];
+const VIEW_ORDER: AppView[] = ["followups", "echo", "reminders"];
+
+const TAB_ICONS: Record<AppView, LucideIcon> = {
+  followups: MessagesSquare,
+  echo: HeartPulse,
+  reminders: BellRing,
+};
+
+const TAB_COPY_KEYS: Record<AppView, "followUps" | "echo" | "reminders"> = {
+  followups: "followUps",
+  echo: "echo",
+  reminders: "reminders",
+};
 
 type ViewSwitcherProps = {
   view: AppView;
@@ -63,7 +82,7 @@ function ViewSwitcher({ view, onChange }: ViewSwitcherProps) {
 
   const tabClassName = (isActive: boolean) =>
     cn(
-      "inline-flex h-10 items-center gap-2 rounded-lg px-3.5 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+      "inline-flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-lg px-1.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:gap-2 sm:px-3.5 sm:text-[13px]",
       isActive
         ? "bg-brand text-white"
         : "text-bodytext hover:bg-brand-soft hover:text-ink",
@@ -74,42 +93,36 @@ function ViewSwitcher({ view, onChange }: ViewSwitcherProps) {
       <div
         role="tablist"
         aria-label={copy.nav.label}
-        className="inline-flex gap-1 rounded-xl border border-line bg-white p-1 shadow-soft"
+        className="grid w-full grid-cols-3 gap-1 rounded-xl border border-line bg-white p-1 shadow-soft sm:inline-flex sm:w-auto"
       >
-        <button
-          type="button"
-          role="tab"
-          id="tab-analyze"
-          aria-controls="panel-analyze"
-          aria-selected={view === "analyze"}
-          tabIndex={view === "analyze" ? 0 : -1}
-          onClick={() => onChange("analyze")}
-          onKeyDown={handleKeyDown}
-          ref={(node) => {
-            tabRefs.current.analyze = node;
-          }}
-          className={tabClassName(view === "analyze")}
-        >
-          <SearchCheck className="h-4 w-4" aria-hidden="true" />
-          {copy.nav.analyze}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="tab-reminders"
-          aria-controls="panel-reminders"
-          aria-selected={view === "reminders"}
-          tabIndex={view === "reminders" ? 0 : -1}
-          onClick={() => onChange("reminders")}
-          onKeyDown={handleKeyDown}
-          ref={(node) => {
-            tabRefs.current.reminders = node;
-          }}
-          className={tabClassName(view === "reminders")}
-        >
-          <BellRing className="h-4 w-4" aria-hidden="true" />
-          {copy.nav.reminders}
-        </button>
+        {VIEW_ORDER.map((id) => {
+          const Icon = TAB_ICONS[id];
+          const isActive = view === id;
+
+          return (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              id={`tab-${id}`}
+              aria-controls={`panel-${id}`}
+              aria-selected={isActive}
+              tabIndex={isActive ? 0 : -1}
+              onClick={() => onChange(id)}
+              onKeyDown={handleKeyDown}
+              ref={(node) => {
+                tabRefs.current[id] = node;
+              }}
+              className={tabClassName(isActive)}
+            >
+              <Icon
+                className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4"
+                aria-hidden="true"
+              />
+              <span className="truncate">{copy.nav[TAB_COPY_KEYS[id]]}</span>
+            </button>
+          );
+        })}
       </div>
     </nav>
   );
@@ -121,21 +134,27 @@ export default function App() {
   const {
     status,
     analysis,
+    questions,
+    questionHistory,
+    round,
+    answers,
+    meta,
     error,
     submitted,
     requestId,
     analyze,
+    submitAnswers,
     retry,
+    reset,
   } = useSymptomAnalysis();
 
   const [description, setDescription] = useState("");
   const [focusSignal, setFocusSignal] = useState(0);
-  const [view, setView] = useState<AppView>("analyze");
+  const [view, setView] = useState<AppView>("followups");
 
   const headingRef = useRef<HTMLHeadingElement | null>(null);
   const lastFocusedResult = useRef<string | null>(null);
 
-  const { status: copyStatus, copy: copyToClipboard } = useCopyToClipboard();
   const { announcement: politeAnnouncement, announce } = useAnnouncer();
   const {
     reminders,
@@ -198,15 +217,17 @@ export default function App() {
     [analyze, locale],
   );
 
-  const handleCopy = useCallback(async () => {
-    if (!analysis) {
-      return;
-    }
+  const handleSubmitAnswers = useCallback(
+    (nextAnswers: FollowUpAnswer[]) => {
+      submitAnswers(nextAnswers);
+    },
+    [submitAnswers],
+  );
 
-    const text = buildSummaryText(analysis, locale, copy);
-    const copied = await copyToClipboard(text);
-    announce(copied ? copy.results.copyAnnounce : copy.results.copyAnnounceError);
-  }, [analysis, announce, copy, copyToClipboard, locale]);
+  const handleStartOver = useCallback(() => {
+    reset();
+    setFocusSignal((current) => current + 1);
+  }, [reset]);
 
   const handlePrint = useCallback(() => {
     window.print();
@@ -216,6 +237,10 @@ export default function App() {
     setFocusSignal((current) => current + 1);
     announce(copy.clarifications.focusAnnounce);
   }, [announce, copy.clarifications.focusAnnounce]);
+
+  const followUpKey = questions
+    ? `${round}-${questions.map((question) => question.id).join("-")}`
+    : "followup";
 
   return (
     <>
@@ -243,9 +268,9 @@ export default function App() {
 
           <div
             role="tabpanel"
-            id="panel-analyze"
-            aria-labelledby="tab-analyze"
-            hidden={view !== "analyze"}
+            id="panel-followups"
+            aria-labelledby="tab-followups"
+            hidden={view !== "followups"}
           >
             <div className="mx-auto w-full max-w-[1120px] px-5 pt-12 sm:px-6 sm:pt-16 lg:px-8 lg:pt-20">
               <div className="mx-auto w-full max-w-[760px]">
@@ -279,22 +304,52 @@ export default function App() {
                 </div>
               </div>
 
-              {status !== "idle" ? (
+              {questions && (status === "questions" || status === "loading") ? (
+                <div className="mt-10 sm:mt-12">
+                  <FollowUpPanel
+                    key={followUpKey}
+                    questions={questions}
+                    round={round}
+                    totalRounds={MAX_FOLLOW_UP_ROUNDS}
+                    meta={meta}
+                    submitting={status === "loading"}
+                    onSubmit={handleSubmitAnswers}
+                    onStartOver={handleStartOver}
+                  />
+                </div>
+              ) : null}
+
+              {status === "loading" && !questions ? (
+                <div className="mt-14 sm:mt-16">
+                  <LoadingResults />
+                </div>
+              ) : null}
+
+              {status === "success" || status === "error" ? (
                 <div className="mt-14 sm:mt-16">
                   <ResultsPanel
                     status={status}
                     analysis={analysis}
                     error={error}
                     edited={edited}
-                    copyStatus={copyStatus}
                     headingRef={headingRef}
-                    onCopy={handleCopy}
                     onPrint={handlePrint}
                     onRetry={retry}
                     onContinue={handleContinue}
                   />
                 </div>
               ) : null}
+            </div>
+          </div>
+
+          <div
+            role="tabpanel"
+            id="panel-echo"
+            aria-labelledby="tab-echo"
+            hidden={view !== "echo"}
+          >
+            <div className="mx-auto w-full max-w-[880px] px-5 pt-10 sm:px-6 sm:pt-12 lg:px-8">
+              <EchoBridgeView />
             </div>
           </div>
 
@@ -323,7 +378,13 @@ export default function App() {
         <SiteFooter />
       </div>
 
-      {analysis ? <PrintReport analysis={analysis} /> : null}
+      {analysis ? (
+        <PrintReport
+          analysis={analysis}
+          answers={answers}
+          questions={questionHistory}
+        />
+      ) : null}
 
       {ringing ? (
         <AlarmOverlay

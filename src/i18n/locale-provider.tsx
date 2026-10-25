@@ -9,7 +9,8 @@ import type { Locale } from "@shared/contract";
 import { dictionaries } from "./copy";
 import { LocaleContext, type LocaleContextValue } from "./locale-context";
 
-const STORAGE_KEY = "tabibna.locale";
+const STORAGE_KEY = "vivavalve.locale";
+const LEGACY_STORAGE_KEY = "tabibna.locale";
 
 function readInitialLocale(): Locale {
   if (typeof window === "undefined") {
@@ -17,7 +18,9 @@ function readInitialLocale(): Locale {
   }
 
   try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const stored =
+      window.localStorage.getItem(STORAGE_KEY) ??
+      window.localStorage.getItem(LEGACY_STORAGE_KEY);
     if (stored === "en" || stored === "ar") {
       return stored;
     }

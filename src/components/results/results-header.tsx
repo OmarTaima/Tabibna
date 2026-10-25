@@ -2,15 +2,12 @@ import type { RefObject } from "react";
 import type { MedicalAnalysis } from "@shared/contract";
 import { Info } from "lucide-react";
 import { useLocale } from "@/i18n/use-locale";
-import type { CopyStatus } from "@/hooks/use-clipboard";
 import { ResultsActions } from "./results-actions";
 
 type ResultsHeaderProps = {
   analysis: MedicalAnalysis;
   headingRef: RefObject<HTMLHeadingElement | null>;
   edited: boolean;
-  copyStatus: CopyStatus;
-  onCopy: () => void;
   onPrint: () => void;
 };
 
@@ -18,8 +15,6 @@ export function ResultsHeader({
   analysis,
   headingRef,
   edited,
-  copyStatus,
-  onCopy,
   onPrint,
 }: ResultsHeaderProps) {
   const { copy } = useLocale();
@@ -64,8 +59,6 @@ export function ResultsHeader({
       </div>
 
       <ResultsActions
-        copyStatus={copyStatus}
-        onCopy={onCopy}
         onPrint={onPrint}
         className="w-full md:w-auto md:shrink-0 md:pt-1"
       />

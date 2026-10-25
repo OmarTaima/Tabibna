@@ -1,7 +1,9 @@
 import {
   analyzeResponseSchema,
   apiErrorSchema,
+  echoResponseSchema,
   healthResponseSchema,
+  type FollowUpAnswer,
   type HealthResponse,
   type Locale,
 } from "@shared/contract";
@@ -149,10 +151,25 @@ export function getHealth(signal?: AbortSignal): Promise<ApiResult<HealthRespons
   });
 }
 
-export function analyzeSymptoms(description: string, locale: Locale, signal?: AbortSignal) {
+export function analyzeSymptoms(
+  description: string,
+  locale: Locale,
+  round: number,
+  answers: FollowUpAnswer[],
+  signal?: AbortSignal,
+) {
   return requestJson("/api/analyze", analyzeResponseSchema, {
     method: "POST",
-    body: { description, locale },
+    body: { description, locale, round, answers },
+    signal,
+    timeoutMs: 210_000,
+  });
+}
+
+export function analyzeEcho(text: string, locale: Locale, signal?: AbortSignal) {
+  return requestJson("/api/echo", echoResponseSchema, {
+    method: "POST",
+    body: { text, locale },
     signal,
     timeoutMs: 210_000,
   });

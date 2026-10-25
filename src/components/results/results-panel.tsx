@@ -1,7 +1,6 @@
 import type { RefObject } from "react";
 import type { MedicalAnalysis } from "@shared/contract";
 import { useLocale } from "@/i18n/use-locale";
-import type { CopyStatus } from "@/hooks/use-clipboard";
 import type { AnalysisStatus } from "@/hooks/use-symptom-analysis";
 import type { ApiError } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
@@ -10,6 +9,7 @@ import { ClinicalContextCard } from "./clinical-context-card";
 import { DemoNotice } from "./demo-notice";
 import { Disclaimers } from "./disclaimers";
 import { ErrorResults } from "./error-results";
+import { ImpressionCard } from "./impression-card";
 import { LoadingResults } from "./loading-results";
 import { ResultsActions } from "./results-actions";
 import { ResultsHeader } from "./results-header";
@@ -21,9 +21,7 @@ type ResultsPanelProps = {
   analysis: MedicalAnalysis | null;
   error: ApiError | null;
   edited: boolean;
-  copyStatus: CopyStatus;
   headingRef: RefObject<HTMLHeadingElement | null>;
-  onCopy: () => void;
   onPrint: () => void;
   onRetry: () => void;
   onContinue: () => void;
@@ -34,9 +32,7 @@ export function ResultsPanel({
   analysis,
   error,
   edited,
-  copyStatus,
   headingRef,
-  onCopy,
   onPrint,
   onRetry,
   onContinue,
@@ -71,14 +67,13 @@ export function ResultsPanel({
         analysis={analysis}
         headingRef={headingRef}
         edited={edited}
-        copyStatus={copyStatus}
-        onCopy={onCopy}
         onPrint={onPrint}
       />
 
       <div className="mt-6 flex flex-col gap-5">
         {analysis.meta.mode === "mock" ? <DemoNotice /> : null}
         <SummaryCard analysis={analysis} />
+        <ImpressionCard impression={analysis.impression} />
         <TerminologySection terms={analysis.terminology} />
         <ClinicalContextCard interpretations={analysis.clinicalInterpretations} />
         <ClarificationsCard
@@ -104,8 +99,6 @@ export function ResultsPanel({
 
       <div className="mt-4 md:hidden">
         <ResultsActions
-          copyStatus={copyStatus}
-          onCopy={onCopy}
           onPrint={onPrint}
           showHint={false}
           className="items-stretch"

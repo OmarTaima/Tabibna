@@ -112,7 +112,7 @@ export function showAlarmNotification(title: string, body: string): void {
 
   const options: NotificationOptions = {
     body,
-    tag: "tabibna-medicine-reminder",
+    tag: "vivavalve-medicine-reminder",
     icon: "/favicon.svg",
     requireInteraction: true,
   };

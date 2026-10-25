@@ -1,19 +1,23 @@
-# Tabibna AI
+# VivaValve
 
 **Medical language, made clear.**
 
-Tabibna AI is a bilingual medical language assistant. It turns informal Egyptian Arabic, standard Arabic, or English symptom descriptions into clear, standardized medical terminology in Arabic and English — with plain-language explanations and missing-information prompts.
+VivaValve AI is a bilingual medical language assistant. It turns informal Egyptian Arabic, standard Arabic, or English symptom descriptions into clear, standardized medical terminology in Arabic and English, asks a short round of follow-up questions, and suggests the most likely diagnosis with alternatives.
 
-It is **not** a diagnostic or treatment tool, and it is not a chatbot. The experience is a single, focused translation workflow: describe, analyze, review, share.
+**EchoBridge** is the second workflow: paste an echocardiography report and get a plain-language summary plus a glossary of the terms it uses.
+
+VivaValve is **not** a substitute for a qualified clinician and does not prescribe treatment. The experience is focused: describe, answer, review, print — or paste an echo report and read the explanation.
 
 ## Features
 
 - Egyptian Arabic, Modern Standard Arabic, and English input
 - Standardized English and Arabic medical terms with bilingual explanations
-- Clear separation between reported symptoms and cautious clinical interpretation
-- Missing-information questions without invented assumptions
+- A multi-step follow-up flow (up to two question rounds) before the assessment
+- A bilingual most-likely diagnosis (clinical impression) with a confidence level, alternatives, and rationale
+- EchoBridge: plain-language explanations of echocardiography reports
+- Clear separation between reported symptoms, clinical interpretation, and the AI impression
 - Full English LTR and Arabic RTL interfaces
-- Copyable bilingual summary and print/PDF healthcare report
+- Print/PDF report with the impression and the follow-up questions and answers
 - Medicine reminders with an alarm sound, a browser notification, and an in-app alarm overlay
 - Loading, empty, invalid-input, API-error, and mock-mode states
 - Clearly labeled synthetic demo mode when no AI provider is configured
@@ -30,11 +34,11 @@ It is **not** a diagnostic or treatment tool, and it is not a chatbot. The exper
 ## Project structure
 
 ```
-tabibna-ai/
+vivavalve/
 ├── src/
-│   ├── components/       # layout, form, results, print report, UI primitives
-│   ├── hooks/            # language state and symptom-analysis flow
-│   ├── lib/              # API client, i18n dictionary, copy and report helpers
+│   ├── components/       # layout, form, follow-ups, echo, results, print report, UI primitives
+│   ├── hooks/            # locale state, symptom follow-up flow, echo flow, reminders
+│   ├── lib/              # API client, i18n dictionary, format and reminder helpers
 │   ├── App.tsx
 │   └── index.css
 ├── shared/
@@ -117,8 +121,9 @@ caveats (function timeout, cold starts, in-memory rate limiting).
 
 ## Safety
 
-- The product provides medical terminology assistance, not diagnosis or treatment.
+- VivaValve provides medical language assistance and an AI assessment, not a confirmed diagnosis or treatment.
 - The app never claims the user has a disease and never recommends medication or dosage.
+- EchoBridge explains terminology only. It does not diagnose the echocardiography findings.
 - The server and the model both omit emergency numbers, first aid, and safety advice. The app surfaces a bilingual disclaimer that directs the user to a qualified healthcare professional, but it does not triage or screen for warning signs.
 - Synthetic demo output is never presented as a real AI analysis.
 
@@ -129,7 +134,10 @@ If you are very unwell or symptoms are severe or worsening, contact your local e
 | Method | Path | Purpose |
 | --- | --- | --- |
 | GET | `/api/health` | Service status and active mode |
-| POST | `/api/analyze` | Full medical language analysis |
+| POST | `/api/analyze` | Follow-up questions or the full medical language analysis |
+| POST | `/api/echo` | Plain-language echocardiography report explanation |
+
+`POST /api/analyze` accepts `{ description, locale, round, answers }`. Round `0` starts the flow; the response is either `{ status: "follow_up", round, questions, meta }` or `{ status: "complete", analysis }`. Answers from earlier rounds are sent back with the next request.
 
 All requests and responses are validated against `shared/contract.ts`. Errors use `{ error, code, requestId? }`.
 
@@ -140,8 +148,8 @@ All requests and responses are validated against `shared/contract.ts`. Errors us
 | `npm run dev` | Run API + web app together |
 | `npm run dev:web` | Vite frontend only |
 | `npm run dev:server` | Express API only (watch mode) |
-| `npm run typecheck` | TypeScript check for app + server |
-| `npm run build` | Typecheck and build the frontend |
+| `npm run typecheck` | TypeScript check for the app |
+| `npm run build` | Typecheck the app and server, then build the frontend |
 | `npm run test:server` | Server smoke, failure-path, prompt, and live-AI tests |
 | `npm run test:client` | Reminder and notification unit tests |
 | `npm test` | Run the server and client test suites together |
@@ -149,7 +157,7 @@ All requests and responses are validated against `shared/contract.ts`. Errors us
 
 ## Medicine reminders
 
-The **Reminders** tab stores reminders locally in the browser (`localStorage`, key `tabibna.reminders.v1`). Nothing is uploaded and no account is required.
+The **Reminders** tab stores reminders locally in the browser (`localStorage`, key `vivavalve.reminders.v1`). Reminders saved under the earlier `tabibna.reminders.v1` key are migrated once on first load. Nothing is uploaded and no account is required.
 
 - **Schedule**: repeat every N hours (1–24, with presets 4 / 6 / 8 / 12 / 24), or a fixed time each day.
 - **Alarm**: a Web Audio two-tone beep, a browser notification, and a full-screen in-app overlay with **Taken**, **Snooze 10 minutes**, and **Dismiss**. The overlay is an `alertdialog`, closes on Escape, and is announced to screen readers.
@@ -163,7 +171,7 @@ Limitations worth knowing:
 - Browsers throttle timers in background tabs to roughly once a minute, so the reminder may fire a little late; it is never skipped.
 - If notification permission is denied, the in-app overlay and the sound still work, and the UI says so.
 
-Tabibna does not give dosing advice. Reminders only repeat the schedule the user enters, which should follow their doctor or pharmacist.
+VivaValve does not give dosing advice. Reminders only repeat the schedule the user enters, which should follow their doctor or pharmacist.
 
 ## Scope
 

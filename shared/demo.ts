@@ -144,6 +144,18 @@ const HEADACHE: DemoCase = {
         confidence: "moderate",
       },
     ],
+    impression: {
+      primary: { en: "Migraine without aura", ar: "الشقيقة بدون هالة" },
+      confidence: "moderate",
+      differentials: [
+        { en: "Tension-type headache", ar: "الصداع التوتري" },
+        { en: "Viral illness with headache", ar: "عدوى فيروسية مصحوبة بصداع" },
+      ],
+      rationale: {
+        en: "A severe headache since yesterday that worsens with light, with light-headedness and difficulty concentrating, fits this pattern best; fever and neck stiffness were not reported.",
+        ar: "صداع شديد منذ يوم أمس يزداد مع الضوء، مع دوار وصعوبة في التركيز، يناسب هذا النمط أكثر من غيره؛ ولم يُذكر ارتفاع في الحرارة أو تيبس في الرقبة.",
+      },
+    },
   },
 };
 
@@ -258,6 +270,18 @@ const ABDOMINAL: DemoCase = {
         confidence: "low",
       },
     ],
+    impression: {
+      primary: { en: "Acute gastroenteritis", ar: "التهاب معدي معوي حاد" },
+      confidence: "low",
+      differentials: [
+        { en: "Irritable bowel syndrome flare", ar: "نوبة تهيّج القولون" },
+        { en: "Food-related indigestion", ar: "عسر هضم مرتبط بالطعام" },
+      ],
+      rationale: {
+        en: "Two days of intermittent pain below the navel with mild diarrhea and bloating fits this pattern best, but the description does not report fever, vomiting, or blood in the stool.",
+        ar: "ألم متقطع أسفل السرة منذ يومين مع إسهال خفيف وانتفاخ يناسب هذا النمط أكثر من غيره، لكن الوصف لا يذكر حرارة أو قيئًا أو دمًا في البراز.",
+      },
+    },
   },
 };
 
@@ -360,6 +384,18 @@ const CHEST: DemoCase = {
         confidence: "moderate",
       },
     ],
+    impression: {
+      primary: { en: "Chest tightness of unclear cause", ar: "تقل في الصدر غير محدد السبب" },
+      confidence: "low",
+      differentials: [
+        { en: "Anxiety-related chest tightness", ar: "تقل في الصدر مرتبط بالقلق" },
+        { en: "Respiratory tract infection", ar: "عدوى في الجهاز التنفسي" },
+      ],
+      rationale: {
+        en: "Chest tightness since this morning with breathlessness and mild dizziness is a cardiopulmonary pattern, but the description lacks the detail needed to name a specific cause.",
+        ar: "تقل في الصدر منذ صباح اليوم مع ضيق في النفس ودوار خفيف يشكّل نمطًا قلبيًا رئويًا، لكن الوصف يفتقر إلى التفاصيل اللازمة لتحديد سبب معين.",
+      },
+    },
   },
 };
 
@@ -449,6 +485,17 @@ const THROAT: DemoCase = {
       },
     ],
     clinicalInterpretations: [],
+    impression: {
+      primary: { en: "Acute pharyngitis", ar: "التهاب البلعوم الحاد" },
+      confidence: "moderate",
+      differentials: [
+        { en: "Viral upper respiratory infection", ar: "عدوى فيروسية في الجهاز التنفسي العلوي" },
+      ],
+      rationale: {
+        en: "A sore throat since yesterday with pain on swallowing and a subjective feverish feeling fits this pattern best; cough, runny nose, and ear pain were not reported.",
+        ar: "ألم في الحلق منذ يوم أمس مع ألم عند البلع وشعور بالحرارة يناسب هذا النمط أكثر من غيره؛ ولم يُذكر كحة أو رشح أو ألم في الأذن.",
+      },
+    },
   },
 };
 
@@ -513,6 +560,7 @@ export function buildDemoAnalysis(description: string): MedicalAnalysis {
       ...item,
       id: `${demo.key}-interpretation-${index + 1}`,
     })),
+    impression: demo.content.impression,
     disclaimer: FULL_DISCLAIMER,
   };
 }

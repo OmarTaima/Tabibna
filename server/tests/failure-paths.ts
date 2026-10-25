@@ -59,30 +59,43 @@ try {
     status: "ok",
     mode: "live",
     aiConfigured: true,
-    version: "1.0.0",
+    version: "2.0.0",
   });
   passed("health reports live mode when an AI key is configured");
 
   const description = "I have had a headache since yesterday and feel dizzy when I stand up.";
 
-  const firstFailure = await postJson("/api/analyze", { description, locale: "en" });
+  const firstFailure = await postJson("/api/analyze", {
+    description,
+    locale: "en",
+    round: 0,
+  });
   assert.equal(firstFailure.status, 502);
   assert.equal("analysis" in (firstFailure.body as object), false, "must not fall back to mock");
+  assert.equal("questions" in (firstFailure.body as object), false);
   const firstError = apiErrorSchema.parse(firstFailure.body);
   assert.equal(firstError.code, "AI_ERROR");
   assert.ok(firstError.requestId);
   assert.ok(!JSON.stringify(firstFailure.body).includes("test-key-not-real"));
   passed("AI transport failure returns 502 AI_ERROR without mock fallback or key leakage");
 
-  const secondFailure = await postJson("/api/analyze", { description, locale: "en" });
+  const secondFailure = await postJson("/api/analyze", { description, locale: "en", round: 0 });
   assert.equal(secondFailure.status, 502);
   assert.equal(apiErrorSchema.parse(secondFailure.body).code, "AI_ERROR");
 
-  const limitedAnalyze = await postJson("/api/analyze", { description, locale: "en" });
+  const limitedAnalyze = await postJson("/api/analyze", { description, locale: "en", round: 0 });
   assert.equal(limitedAnalyze.status, 429);
   assert.equal(apiErrorSchema.parse(limitedAnalyze.body).code, "RATE_LIMITED");
   assert.ok(apiErrorSchema.parse(limitedAnalyze.body).requestId);
-  passed("analyze rate limit returns 429 RATE_LIMITED after the configured limit");
+  passed("the shared analyze/echo rate limit returns 429 RATE_LIMITED after the configured limit");
+
+  const limitedEcho = await postJson("/api/echo", {
+    text: "Echocardiography report: LVEF 55% with mild mitral regurgitation.",
+    locale: "en",
+  });
+  assert.equal(limitedEcho.status, 429);
+  assert.equal(apiErrorSchema.parse(limitedEcho.body).code, "RATE_LIMITED");
+  passed("POST /api/echo shares the analyze rate limiter");
 
   const allowedCors = await request("/api/health", {
     headers: { Origin: "http://localhost:5173" },
