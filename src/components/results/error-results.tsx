@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, type RefObject } from "react";
 import { AlertCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/i18n/use-locale";
@@ -44,9 +44,15 @@ type ErrorResultsProps = {
   error: ApiError;
   onRetry: () => void;
   messages?: ErrorMessages;
+  headingRef?: RefObject<HTMLHeadingElement | null>;
 };
 
-export function ErrorResults({ error, onRetry, messages }: ErrorResultsProps) {
+export function ErrorResults({
+  error,
+  onRetry,
+  messages,
+  headingRef,
+}: ErrorResultsProps) {
   const { copy } = useLocale();
   const headingId = useId();
   const bodyId = useId();
@@ -67,7 +73,9 @@ export function ErrorResults({ error, onRetry, messages }: ErrorResultsProps) {
           <div>
             <h2
               id={headingId}
-              className="font-display text-[18px] font-semibold text-ink"
+              ref={headingRef}
+              tabIndex={-1}
+              className="scroll-mt-24 rounded-md font-display text-[18px] font-semibold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:ring-offset-4 focus-visible:ring-offset-page"
             >
               {text.title}
             </h2>

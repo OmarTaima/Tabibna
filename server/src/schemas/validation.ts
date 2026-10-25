@@ -1,4 +1,4 @@
-import type { ZodError, ZodType, ZodTypeDef } from "zod";
+import type { ZodError, ZodType } from "zod";
 import { AppError } from "./errors.ts";
 
 function validationMessage(error: ZodError): string {
@@ -31,6 +31,10 @@ function validationMessage(error: ZodError): string {
     return "Unsupported language. Use 'en' or 'ar'.";
   }
 
+  if (path === "source") {
+    return "Unsupported report source. Use 'text' or 'photo'.";
+  }
+
   if (path === "round") {
     return "Please use a follow-up round between 0 and 2.";
   }
@@ -47,7 +51,7 @@ function validationMessage(error: ZodError): string {
 }
 
 export function parseRequest<Output, Input>(
-  schema: ZodType<Output, ZodTypeDef, Input>,
+  schema: ZodType<Output, Input>,
   input: unknown,
 ): Output {
   const result = schema.safeParse(input);

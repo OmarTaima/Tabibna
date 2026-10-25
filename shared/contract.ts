@@ -191,6 +191,9 @@ export type AiFollowUpDecision = z.infer<typeof aiFollowUpDecisionSchema>;
 export const MIN_ECHO_TEXT_LENGTH = 10;
 export const MAX_ECHO_TEXT_LENGTH = 4000;
 
+export const echoSourceSchema = z.enum(["text", "photo"]);
+export type EchoSource = z.infer<typeof echoSourceSchema>;
+
 export const echoRequestSchema = z.object({
   text: z
     .string()
@@ -198,6 +201,7 @@ export const echoRequestSchema = z.object({
     .min(MIN_ECHO_TEXT_LENGTH, "Please paste an echocardiography report of at least 10 characters.")
     .max(MAX_ECHO_TEXT_LENGTH, "Please keep the report under 4,000 characters."),
   locale: localeSchema.default("en"),
+  source: echoSourceSchema.default("text"),
 });
 export type EchoRequest = z.infer<typeof echoRequestSchema>;
 
@@ -211,6 +215,7 @@ export type EchoTerm = z.infer<typeof echoTermSchema>;
 export const echoAnalysisSchema = z.object({
   id: z.string().min(1),
   meta: analysisMetaSchema,
+  source: echoSourceSchema,
   original: z.string().min(1).max(MAX_ECHO_TEXT_LENGTH),
   summary: localizedTextSchema,
   terms: z.array(echoTermSchema).min(0).max(15),

@@ -68,11 +68,15 @@ export function createApp(): Express {
         ? {
             directives: {
               defaultSrc: ["'self'"],
-              scriptSrc: ["'self'"],
+              // Tesseract.js runs OCR in the browser and fetches its worker, WASM
+              // core, and language data from jsDelivr; the worker is created as a
+              // blob and WASM compilation needs 'wasm-unsafe-eval'.
+              scriptSrc: ["'self'", "'wasm-unsafe-eval'", "https://cdn.jsdelivr.net"],
+              workerSrc: ["'self'", "blob:", "https://cdn.jsdelivr.net"],
               styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
               fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-              imgSrc: ["'self'", "data:"],
-              connectSrc: ["'self'"],
+              imgSrc: ["'self'", "data:", "blob:"],
+              connectSrc: ["'self'", "https://cdn.jsdelivr.net"],
               objectSrc: ["'none'"],
               baseUri: ["'self'"],
               frameAncestors: ["'none'"],

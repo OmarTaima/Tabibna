@@ -5,10 +5,15 @@ import {
   echoResponseSchema,
   type AnalysisMeta,
   type EchoAnalysis,
+  type EchoSource,
   type EchoTerm,
 } from "../../../shared/contract.ts";
 import { requestAiEcho } from "../ai/provider.ts";
-import { ECHO_DEMO_NOTICE, ECHO_LIVE_NOTICE } from "../config/content.ts";
+import {
+  ECHO_DEMO_NOTICE,
+  ECHO_LIVE_NOTICE,
+  ECHO_PHOTO_LIVE_NOTICE,
+} from "../config/content.ts";
 import { config } from "../config/env.ts";
 import { buildMockEcho } from "../mock/mock-echo.ts";
 import { getRequestId } from "../schemas/errors.ts";
@@ -16,12 +21,16 @@ import { parseRequest } from "../schemas/validation.ts";
 
 const MOCK_MODEL = "synthetic-demo-v1";
 
-function buildMeta(live: boolean): AnalysisMeta {
+function buildMeta(live: boolean, source: EchoSource): AnalysisMeta {
   return {
     mode: live ? "live" : "mock",
     model: live ? config.aiModel : MOCK_MODEL,
     generatedAt: new Date().toISOString(),
-    notice: live ? ECHO_LIVE_NOTICE : ECHO_DEMO_NOTICE,
+    notice: live
+      ? source === "photo"
+        ? ECHO_PHOTO_LIVE_NOTICE
+        : ECHO_LIVE_NOTICE
+      : ECHO_DEMO_NOTICE,
   };
 }
 
@@ -43,12 +52,18 @@ export async function echoHandler(
     const live = config.aiConfigured;
 
     const content = live
-      ? await requestAiEcho(input.text, input.locale, getRequestId(response) ?? "unknown")
+      ? await requestAiEcho(
+          input.text,
+          input.locale,
+          input.source,
+          getRequestId(response) ?? "unknown",
+        )
       : buildMockEcho(input.text);
 
     const analysis: EchoAnalysis = {
       id: randomUUID(),
-      meta: buildMeta(live),
+      meta: buildMeta(live, input.source),
+      source: input.source,
       original: input.text,
       summary: content.summary,
       terms: toEchoTerms(content.terms),

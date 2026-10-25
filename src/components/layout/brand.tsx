@@ -5,7 +5,7 @@ export function Brand() {
 
   return (
     <div
-      className="flex items-center gap-2.5"
+      className="flex shrink-0 items-center gap-2 sm:gap-2.5"
       role="img"
       aria-label={copy.header.brandLabel}
     >
@@ -20,10 +20,10 @@ export function Brand() {
         lang="en"
         dir="ltr"
         aria-hidden="true"
-        className="font-display text-[17px] font-bold tracking-[-0.01em] text-ink sm:text-[18px]"
+        className="font-display text-[15px] font-bold tracking-[-0.01em] text-ink sm:text-[18px]"
       >
         {copy.header.brandWordmark}
-        <span className="ms-1 align-middle text-[10px] font-extrabold uppercase tracking-[0.12em] text-brand">
+        <span className="ms-1 hidden align-middle text-[10px] font-extrabold uppercase tracking-[0.12em] text-brand sm:inline">
           {copy.header.brandAccent}
         </span>
       </span>

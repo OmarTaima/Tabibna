@@ -1,4 +1,6 @@
-# Design specification — VivaValve
+# Design specification — CardioBridge
+
+Brand: **CardioBridge AI** (short: CardioBridge). EchoBridge is the feature name used inside the product, not a separate brand.
 
 The full working design spec lives in the team conversation. Core constraints:
 

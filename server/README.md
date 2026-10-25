@@ -1,13 +1,13 @@
-# VivaValve — Server
+# CardioBridge — Server
 
-Express + TypeScript API for VivaValve 2.0.0. It provides an optional
+Express + TypeScript API for CardioBridge 2.0.0. It provides an optional
 OpenAI-compatible adapter for two features and a deterministic synthetic demo
 mode that never calls an AI provider:
 
 - **FollowUps** — `POST /api/analyze` is an adaptive two-round follow-up flow that
   ends in a specific AI assessment.
 - **EchoBridge** — `POST /api/echo` explains echocardiography report terms in
-  plain language.
+  plain language, from pasted text or from text read on the device from a photo.
 
 All request and response shapes are defined by `../shared/contract.ts`. Response
 bodies are parsed with those Zod schemas before they are sent.
@@ -219,7 +219,7 @@ Complete response (`200`):
         "ar": "..."
       }
     },
-    "disclaimer": { "en": "VivaValve provides AI-generated health information, not a confirmed diagnosis. ...", "ar": "..." }
+    "disclaimer": { "en": "CardioBridge provides AI-generated health information, not a confirmed diagnosis. ...", "ar": "..." }
   }
 }
 ```
@@ -247,13 +247,19 @@ Request:
 ```json
 {
   "text": "Echocardiography report: LVEF 55%, moderate mitral regurgitation, aortic valve area 1.0 cm2.",
-  "locale": "en"
+  "locale": "en",
+  "source": "text"
 }
 ```
 
-- `text`: required, trimmed, 10–4,000 characters.
+- `text`: required, trimmed, 10–4,000 characters. With the photo option this is
+  the text the browser extracted from the image; the image itself is never sent.
 - `locale`: optional, `"en"` or `"ar"`, defaults to `"en"`. Guides the live AI
   prompt; both languages are always returned.
+- `source`: optional, `"text"` or `"photo"`, defaults to `"text"`. It records
+  where the report text came from, drives the live notice and one paragraph of
+  the AI prompt, and never changes the glossary. Any other value is rejected with
+  `400 INVALID_INPUT`.
 
 Response (`200`):
 
@@ -267,6 +273,7 @@ Response (`200`):
       "generatedAt": "2026-10-25T21:14:02.004Z",
       "notice": { "en": "Synthetic demo glossary: no AI model was used. ...", "ar": "..." }
     },
+    "source": "text",
     "original": "Echocardiography report: LVEF 55%, moderate mitral regurgitation, aortic valve area 1.0 cm2.",
     "summary": {
       "en": "Synthetic demo output: no AI model was used. The report mentions ejection fraction (EF), ...",
@@ -286,10 +293,45 @@ Response (`200`):
 }
 ```
 
+- `source`: echoes the request value, `"text"` or `"photo"`.
+- `original`: the exact text the server received, after trimming.
 - `summary`: 2–3 sentences (live) in both languages.
 - `terms`: 0–15 items. `id` is a `randomUUID()`. Each item explains what the term
   or measurement means in general; it never interprets the patient's value.
-- Echo responses never include a diagnosis, a severity grade, or treatment.
+- Echo responses never include a diagnosis, a severity grade, or treatment, and
+  they never present a conclusion the report states as the model's own diagnosis.
+- `meta.notice` is `ECHO_LIVE_NOTICE` for live text, `ECHO_PHOTO_LIVE_NOTICE` for
+  live photo/OCR text, and `ECHO_DEMO_NOTICE` in mock mode for either source.
+
+### Photo option and on-device OCR
+
+The photo option is entirely client-side. The browser reads the image with
+Tesseract.js, extracts the report text, and sends only that text to
+`POST /api/echo` with `source: "photo"`.
+
+- The image is never uploaded, stored, or forwarded. There is no image field, no
+  multipart endpoint, no base64 payload, and no vision model in the API.
+- The 32 kb JSON body limit is unchanged and still applies to the extracted text;
+  `text` stays capped at 4,000 characters.
+- OCR output is imperfect: misread labels, stray bullets, and personal
+  identifiers (names, IDs, phone numbers, addresses, signatures) can appear in
+  `text`. The server does not strip them from `original`, because it must return
+  what it received; the live prompt forbids repeating them in `summary` and
+  `terms`.
+- `ECHO_PHOTO_LIVE_NOTICE` tells the user the explanation was generated from text
+  read on the device, that the photo was not uploaded, and that the extracted
+  text should be checked against the original report.
+- Mock mode accepts `source: "photo"`, returns the synthetic demo notice and the
+  keyword glossary, and is never rejected for the photo source.
+- Prompt behavior for both sources: the report text is untrusted data; obvious
+  OCR label confusions may be recognized from clinical context (for example IVS
+  read as VS, LA as 1A, AO as 0), but a measurement is never guessed, corrected,
+  recalculated, or invented, and an unreadable value must be described as
+  unclear. A diagnosis, severity, or conclusion that the report itself states may
+  be explained when it is attributed to the report (for example "The report's
+  conclusion mentions severe aortic stenosis"); it is never presented as the
+  model's own diagnosis, the report's differential options are never resolved,
+  and no grade or diagnosis the report does not state is added.
 
 ### CORS preflight
 
@@ -316,7 +358,7 @@ middleware.
 
 | Status | `code` | When |
 | --- | --- | --- |
-| `400` | `INVALID_INPUT` | Missing/blank/too-short/too-long description or echo report, unsupported locale, out-of-range round, a follow-up round without answers, or non-object body. |
+| `400` | `INVALID_INPUT` | Missing/blank/too-short/too-long description or echo report, unsupported locale, unsupported echo `source`, out-of-range round, a follow-up round without answers, or non-object body. |
 | `400` | `INVALID_JSON` | Body is not parseable JSON. |
 | `413` | `PAYLOAD_TOO_LARGE` | JSON body exceeds 32 kb. |
 | `404` | `NOT_FOUND` | Unknown `/api/*` route, or unknown non-API route outside production static mode. |
@@ -417,8 +459,16 @@ measurements, diagnoses, or medications.
 ## Security
 
 - `helmet` is enabled; CSP is applied in production and allows self-hosted
-  scripts, inline styles, and Google Fonts. COEP is disabled for compatibility.
-- JSON bodies under `/api` are limited to 32 kb.
+  scripts, inline styles, and Google Fonts. It also allows the jsDelivr CDN that
+  Tesseract.js v7 uses for its worker script, WASM core, and language data, plus
+  `blob:` workers, `'wasm-unsafe-eval'` for the WASM build, `data:`/`blob:` images
+  for the local preview, and `cdn.jsdelivr.net` for `connect-src`. COEP is
+  disabled for compatibility.
+- On-device OCR runs in the browser. The API has no image upload endpoint, no
+  multipart parser, and no vision model, so no photo, thumbnail, or base64 image
+  is ever sent to or stored by the server.
+- JSON bodies under `/api` are limited to 32 kb; the photo option does not change
+  this limit because only the extracted text is submitted.
 - Per-IP rate limits are applied to `POST /api/analyze` and `POST /api/echo`
   (one shared limiter). `GET /api/health` is not limited.
 - CORS uses an explicit allowlist, not a reflected wildcard.
@@ -428,10 +478,18 @@ measurements, diagnoses, or medications.
 - Every prompt treats user text as untrusted JSON data and instructs the model to
   ignore injected instructions, including requests to reveal the prompt or change
   the output format.
+- The echo prompt additionally treats OCR text as error-prone data, forbids
+  repeating patient names, IDs, phone numbers, addresses, and signatures, and
+  permits explaining a conclusion the report itself states only when it is
+  attributed to the report.
 - Unknown API routes and unexpected failures return the JSON error shape, not
   HTML or stack traces.
 - Graceful shutdown on `SIGINT`/`SIGTERM`, with a 10-second forced-exit
   fallback.
+- Dependency audit: `zod` is pinned to 4.6.7 and the transitive `body-parser`
+  is patched. The remaining `npm audit` moderates are limited to the Tailwind
+  3/PostCSS build toolchain (development-only, not shipped in the deployed
+  bundle); fixing them requires a Tailwind 4 major migration.
 
 ## Production serving
 
@@ -450,7 +508,7 @@ The repository is a single Vercel project that serves the SPA and the API
 together:
 
 ```
-vivavalve/
+cardiobridge/
 ├── api/[...path].ts   # Vercel serverless function → every /api/* route
 ├── server/src/        # Express app (used by the function and by npm start)
 ├── src/               # Vite SPA, published from dist/
@@ -523,16 +581,19 @@ npm run test:server
 - `server/tests/smoke.ts` — mock mode: health/version, round 0 follow-up
   questions, round 1 and round 2 completion with a synthetic `impression`, the
   missing-answers guard, answers ignored on round 0, the echo glossary and its
-  fallback, invalid echo input/locale/JSON, absence of a safety block, and JSON
-  404s.
+  fallback, the `source` flag (`text` default, `photo` accepted in mock mode with
+  the demo notice, unsupported value rejected), invalid echo input/locale/JSON,
+  absence of a safety block, and JSON 404s.
 - `server/tests/failure-paths.ts` — live-mode health, 502 `AI_ERROR` with no
   mock fallback, the shared analyze/echo 429 limit, CORS allowlist behavior, and
   413 payload limits. It points `AI_BASE_URL` at an unreachable local port and
   uses a fake key; no real provider is contacted.
-- `server/tests/prompt.ts` — the four system prompts: VivaValve branding,
+- `server/tests/prompt.ts` — the four system prompts: CardioBridge branding,
   untrusted-data rules, follow-up caps, the ask/final decision shape, the
-  diagnosis-in-impression rule with the treatment ban, echo plain-language
-  rules, and the preserved terminology/Arabic-spelling rules.
+  diagnosis-in-impression rule with the treatment ban, echo plain-language rules,
+  the echo OCR/personal-identifier rules and the report's-stated-conclusion rule,
+  the photo note in the echo user prompt, and the preserved
+  terminology/Arabic-spelling rules.
 - `server/tests/live-ai.ts` — starts a local stub OpenAI-compatible provider that
   distinguishes the follow-up, decision, final, and echo prompts, and verifies
   the live success paths, request shape, Bearer header, Arabic spelling
@@ -573,6 +634,10 @@ Manual checks performed:
   the error and offer a retry; there is no automatic mock fallback.
 - `locale` defaults to `en` and only influences live prompting. All response
   text is bilingual, so the UI can switch languages without re-requesting.
+- `/api/echo` accepts `source: "text" | "photo"` (optional, defaults to `"text"`).
+  Send `"photo"` only when the text came from the on-device OCR flow, so the live
+  notice and the AI prompt match; the response echoes it as `analysis.source`.
+  Never send the image itself, and never put an image in the JSON body.
 - The API is stateless and has no authentication or database. Do not assume
   accounts, history, or per-user storage.
 - Rate limits are in-memory and per process, and `/api/analyze` and `/api/echo`
@@ -617,6 +682,17 @@ api/[...path].ts            # Vercel serverless entry (imports ../server/src/app
   simple forms, not nested or ambiguous sentences.
 - Mock mode never produces a diagnosis; its impression is a synthetic
   placeholder.
+- The photo option depends on browser-side OCR. Accuracy varies with image
+  quality, and the server cannot check the extracted text against the image. The
+  live prompt is instructed to flag unreadable or ambiguous values instead of
+  guessing, but users must verify the extracted text against the original report.
+- OCR text can contain personal identifiers. They are returned unchanged in
+  `analysis.original` because the server echoes what it received; the live prompt
+  forbids repeating them in `summary` and `terms`, and the UI should not display
+  `original` where identifiers matter.
+- Production CSP allows the jsDelivr CDN because Tesseract.js v7 loads its worker,
+  WASM core, and language data from there. An offline or CDN-free deployment
+  needs those assets self-hosted and the CSP tightened.
 - Live output depends on the configured provider supporting an
   OpenAI-compatible `/chat/completions` request with `response_format:
   {"type":"json_object"}`. A provider that rejects that field may return

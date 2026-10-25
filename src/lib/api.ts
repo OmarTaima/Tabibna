@@ -3,6 +3,7 @@ import {
   apiErrorSchema,
   echoResponseSchema,
   healthResponseSchema,
+  type EchoSource,
   type FollowUpAnswer,
   type HealthResponse,
   type Locale,
@@ -166,10 +167,15 @@ export function analyzeSymptoms(
   });
 }
 
-export function analyzeEcho(text: string, locale: Locale, signal?: AbortSignal) {
+export function analyzeEcho(
+  text: string,
+  locale: Locale,
+  source: EchoSource,
+  signal?: AbortSignal,
+) {
   return requestJson("/api/echo", echoResponseSchema, {
     method: "POST",
-    body: { text, locale },
+    body: { text, locale, source },
     signal,
     timeoutMs: 210_000,
   });

@@ -11,6 +11,6 @@ export const LIVE_NOTICE: LocalizedText = {
 };
 
 export const FULL_DISCLAIMER: LocalizedText = {
-  en: "VivaValve provides AI-generated health information, not a confirmed diagnosis. Its assessments are possibilities based on what you reported, they do not replace an assessment by a qualified healthcare professional, and VivaValve never recommends medication. If you feel very unwell, seek local emergency care.",
-  ar: "يقدّم VivaValve معلومات صحية مُولَّدة بالذكاء الاصطناعي، وليست تشخيصًا مؤكدًا. التقييمات الواردة احتمالات مبنية على ما ذكرته، ولا تُغني عن تقييم مختص رعاية صحية مؤهل، ولا يوصي VivaValve بأي أدوية. إذا كنت تشعر بتوعك شديد، فاطلب رعاية طارئة محلية.",
+  en: "CardioBridge provides AI-generated health information, not a confirmed diagnosis. Its assessments are possibilities based on what you reported, they do not replace an assessment by a qualified healthcare professional, and CardioBridge never recommends medication. If you feel very unwell, seek local emergency care.",
+  ar: "يقدّم CardioBridge معلومات صحية مُولَّدة بالذكاء الاصطناعي، وليست تشخيصًا مؤكدًا. التقييمات الواردة احتمالات مبنية على ما ذكرته، ولا تُغني عن تقييم مختص رعاية صحية مؤهل، ولا يوصي CardioBridge بأي أدوية. إذا كنت تشعر بتوعك شديد، فاطلب رعاية طارئة محلية.",
 };

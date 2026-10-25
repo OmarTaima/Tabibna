@@ -8,6 +8,7 @@ import {
   type AiEchoContent,
   type AiFollowUpContent,
   type AiFollowUpDecision,
+  type EchoSource,
   type FollowUpAnswer,
   type Locale,
 } from "../../../shared/contract.ts";
@@ -605,11 +606,12 @@ export async function requestAiFinalAnalysis(
 export function requestAiEcho(
   text: string,
   locale: Locale,
+  source: EchoSource,
   requestId: string,
 ): Promise<AiEchoContent> {
   return requestAiJson({
     systemPrompt: AI_ECHO_SYSTEM_PROMPT,
-    userPrompt: buildEchoUserPrompt(text, locale),
+    userPrompt: buildEchoUserPrompt(text, locale, source),
     schema: aiEchoContentSchema,
     operation: "echo_glossary",
     requestId,

@@ -167,7 +167,7 @@ try {
   assert.equal(
     REMINDERS_STORAGE_KEY,
     "vivavalve.reminders.v1",
-    "reminders use the VivaValve storage key",
+    "reminders use the stable storage key",
   );
 
   const first = createReminder(

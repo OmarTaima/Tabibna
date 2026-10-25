@@ -89,7 +89,7 @@ try {
   });
   assert.ok(health.headers.get("x-request-id"), "health should return a request id");
   assert.ok(health.headers.get("x-content-type-options"), "helmet headers should be present");
-  passed("GET /api/health returns mock health for VivaValve 2.0.0");
+  passed("GET /api/health returns mock health for CardioBridge 2.0.0");
 
   const arabicExample =
     "عندي صداع من امبارح، ودوخة لما أقف، وحرارة بسيطة، وبحس بتعب عام.";
@@ -261,6 +261,7 @@ try {
   const echoAnalysis = echoResponseSchema.parse(echoResponse.body).analysis;
   assert.equal(echoAnalysis.meta.mode, "mock");
   assert.equal(echoAnalysis.meta.model, "synthetic-demo-v1");
+  assert.equal(echoAnalysis.source, "text");
   assert.equal(echoAnalysis.original, echoReport);
   assert.ok(echoAnalysis.summary.en.includes("Synthetic"));
   assert.ok(echoAnalysis.meta.notice.en.includes("Synthetic"));
@@ -301,6 +302,27 @@ try {
   assert.equal(echoFallbackAnalysis.terms[0].term.en, "Echocardiography report");
   passed("POST /api/echo returns a fallback glossary when nothing matches");
 
+  const echoPhotoResponse = await postJson("/api/echo", {
+    text: echoReport,
+    locale: "en",
+    source: "photo",
+  });
+  assert.equal(echoPhotoResponse.status, 200);
+  const echoPhotoAnalysis = echoResponseSchema.parse(echoPhotoResponse.body).analysis;
+  assert.equal(echoPhotoAnalysis.source, "photo");
+  assert.equal(echoPhotoAnalysis.meta.mode, "mock");
+  assert.equal(echoPhotoAnalysis.meta.model, "synthetic-demo-v1");
+  assert.equal(echoPhotoAnalysis.original, echoReport);
+  assert.ok(echoPhotoAnalysis.meta.notice.en.includes("Synthetic"));
+  assert.ok(echoPhotoAnalysis.meta.notice.en.includes("no AI model"));
+  assert.ok(echoPhotoAnalysis.summary.en.includes("Synthetic"));
+  assert.deepEqual(
+    echoPhotoAnalysis.terms.map((item) => item.term.en),
+    echoAnalysis.terms.map((item) => item.term.en),
+    "the mock glossary must not depend on the source",
+  );
+  passed("POST /api/echo accepts source photo in mock mode and keeps the demo notice");
+
   const shortEcho = await postJson("/api/echo", { text: "short" });
   assert.equal(shortEcho.status, 400);
   const shortEchoError = apiErrorSchema.parse(shortEcho.body);
@@ -320,6 +342,17 @@ try {
   assert.equal(invalidEchoLocale.status, 400);
   assert.equal(apiErrorSchema.parse(invalidEchoLocale.body).code, "INVALID_INPUT");
   passed("POST /api/echo rejects an unsupported locale with 400");
+
+  const invalidEchoSource = await postJson("/api/echo", {
+    text: "LVEF 55% with mild mitral regurgitation.",
+    locale: "en",
+    source: "image",
+  });
+  assert.equal(invalidEchoSource.status, 400);
+  const invalidEchoSourceError = apiErrorSchema.parse(invalidEchoSource.body);
+  assert.equal(invalidEchoSourceError.code, "INVALID_INPUT");
+  assert.ok(invalidEchoSourceError.requestId);
+  passed("POST /api/echo rejects an unsupported source with 400");
 
   const invalidJson = await request("/api/analyze", {
     method: "POST",

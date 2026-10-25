@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { EchoAnalysis, Locale } from "@shared/contract";
+import type { EchoAnalysis, EchoSource, Locale } from "@shared/contract";
 import { analyzeEcho, type ApiError } from "@/lib/api";
 
 export type EchoStatus = "idle" | "loading" | "success" | "error";
@@ -7,6 +7,7 @@ export type EchoStatus = "idle" | "loading" | "success" | "error";
 type EchoRequest = {
   text: string;
   locale: Locale;
+  source: EchoSource;
 };
 
 export function useEchoAnalysis() {
@@ -42,41 +43,52 @@ export function useEchoAnalysis() {
     const isCurrent = () =>
       sequenceRef.current === sequence && !controller.signal.aborted;
 
-    void analyzeEcho(request.text, request.locale, controller.signal).then(
-      (result) => {
-        if (!isCurrent()) {
-          return;
-        }
+    void analyzeEcho(
+      request.text,
+      request.locale,
+      request.source,
+      controller.signal,
+    ).then((result) => {
+      if (!isCurrent()) {
+        return;
+      }
 
-        if (result.ok) {
-          setAnalysis(result.data.analysis);
-          setStatus("success");
-          return;
-        }
+      if (result.ok) {
+        setAnalysis(result.data.analysis);
+        setStatus("success");
+        return;
+      }
 
-        if (result.kind === "aborted") {
-          return;
-        }
+      if (result.kind === "aborted") {
+        return;
+      }
 
-        setError(result);
-        setStatus("error");
-      },
-    );
+      setError(result);
+      setStatus("error");
+    });
   }, []);
 
   const analyze = useCallback(
-    (text: string, locale: Locale) => {
-      run({ text: text.trim(), locale });
+    (text: string, locale: Locale, source: EchoSource) => {
+      run({ text: text.trim(), locale, source });
     },
     [run],
   );
 
-  const retry = useCallback(() => {
-    const current = lastRequestRef.current;
-    if (current) {
-      run(current);
-    }
-  }, [run]);
+  const retry = useCallback(
+    (text?: string) => {
+      const current = lastRequestRef.current;
+      if (current) {
+        run({ ...current, text: text?.trim() ?? current.text });
+      }
+    },
+    [run],
+  );
+
+  const clearError = useCallback(() => {
+    setStatus((current) => (current === "error" ? "idle" : current));
+    setError(null);
+  }, []);
 
   const reset = useCallback(() => {
     abortRef.current?.abort();
@@ -88,5 +100,5 @@ export function useEchoAnalysis() {
     setError(null);
   }, []);
 
-  return { status, analysis, error, analyze, retry, reset };
+  return { status, analysis, error, analyze, retry, clearError, reset };
 }

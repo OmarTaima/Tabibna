@@ -72,8 +72,8 @@ export const MOCK_IMPRESSION: Impression = {
   confidence: "low",
   differentials: [],
   rationale: {
-    en: "Demo mode does not call an AI model, so VivaValve cannot produce a real assessment. This placeholder shows where the most likely diagnosis, its confidence, and its reasoning appear once a live AI provider is configured.",
-    ar: "الوضع التجريبي لا يستدعي نموذج ذكاء اصطناعي، لذلك لا يستطيع VivaValve إنتاج تقييم حقيقي. هذا النص التوضيحي يبيّن المكان الذي يظهر فيه التشخيص الأكثر احتمالًا ودرجة الثقة وتعليله عند تهيئة مزوّد ذكاء اصطناعي مباشر.",
+    en: "Demo mode does not call an AI model, so CardioBridge cannot produce a real assessment. This placeholder shows where the most likely diagnosis, its confidence, and its reasoning appear once a live AI provider is configured.",
+    ar: "الوضع التجريبي لا يستدعي نموذج ذكاء اصطناعي، لذلك لا يستطيع CardioBridge إنتاج تقييم حقيقي. هذا النص التوضيحي يبيّن المكان الذي يظهر فيه التشخيص الأكثر احتمالًا ودرجة الثقة وتعليله عند تهيئة مزوّد ذكاء اصطناعي مباشر.",
   },
 };
 

@@ -438,7 +438,7 @@ try {
 
   const followUpMessages = messagesOf(sentFollowUp);
   assert.ok(followUpMessages.system.includes("STAGE: follow-up questions"));
-  assert.ok(followUpMessages.system.includes("You are VivaValve"));
+  assert.ok(followUpMessages.system.includes("You are CardioBridge"));
   assert.ok(followUpMessages.user.includes(description));
   assert.ok(followUpMessages.user.includes('"interfaceLocale":"en"'));
   passed("live round 0 asks the AI for follow-up questions and returns them");
